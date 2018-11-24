@@ -1,0 +1,9 @@
+#Push to git ignore files
+.idea
+target/
+*.iml
+*.log
+/bin/
+.classpath
+.project
+.settings

@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: springCloud-Server1
+  security:
+    user:
+      password: password123
+      name: user
+#---
+#spring:
+#  profiles: peer2
+server:
+  port: 8761                    # 指定该Eureka实例的端口
+eureka:
+  instance:
+    hostname: peer1
+  client:
+#    registerWithEureka: false
+#    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://user:password123@peer2:8762/eureka/
+# 参考文档：http://projects.spring.io/spring-cloud/docs/1.0.3/spring-cloud.html#_standalone_mode
+# 参考文档：http://my.oschina.net/buwei/blog/618756
+#---
+#spring:
+#     profiles: peer3
+#server:
+#  port: 8763
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: http://user:password123@${eureka.instance.hostname}:${server.port}/eureka/
+#  instance:
+#    hostname: peer3
