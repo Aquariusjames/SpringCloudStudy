@@ -1,26 +1,15 @@
-#eureka单点
-# 开启基于HTTP basic的认证
+server:
+  port: 8763
 spring:
-  security:
-    user:
-      name: user                        # 配置登录的账号是user
-      password: password123             # 配置登录的密码是password123
   application:
     name: springCloud-Server3
-#  profiles:
-#    active: peer3   #指定使用peer3配置
-#配置系统的hosts，windows系统的hosts文件路径：C:\windows\System32\diver\etc\hosts; Linux及MacOs等的是/etc/hosts
-#127.0.0.1  peer1  peer2  peer3
-#---
-server:
-  port: 8763                    # 指定该Eureka实例的端口
+  security:
+    user:
+      name: user
+      password: password123
 eureka:
   instance:
-    hostname: peer3
+    hostname: peer2
   client:
-    registerWithEureka: false    #是否将自己注册到eureka上
-    fetchRegistry: false
-    serviceUrl:
-      defaultZone: http://user:password123@${eureka.instance.hostname}:${server.port}/eureka/
-## 参考文档：http://projects.spring.io/spring-cloud/docs/1.0.3/spring-cloud.html#_standalone_mode
-# 参考文档：http://my.oschina.net/buwei/blog/618756
+    service-url:
+      defaultZone: http://user:password123@peer2:8762/eureka/  #注册到地址为peer2端口号为8762的eureka服务上

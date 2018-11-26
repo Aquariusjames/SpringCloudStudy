@@ -1,0 +1,46 @@
+server:
+  port: 8010
+## INFO
+info:
+  app:
+    name: @project.artifactId@
+    encoding: @project.build.sourceEncoding@
+    java:
+      source: @java.version@
+      target: @java.version@
+#默认访问路径http://localhost:8000/actuator/beans
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+logging:
+  level:
+    feign: DEBUG
+    com.qi.feign.UserFeignClient: debug # 将Feign接口的日志级别设置成DEBUG，因为Feign的Logger.Level只对DEBUG作出响应。
+spring:
+  application:
+    name: springCloud-Consumer1
+  rabbitmq:
+    host: localhost
+    username: guest
+    addresses: guest
+  servlet:
+    multipart:
+      max-file-size: 2000Mb
+      max-request-size: 2500Mb
+  http:
+    encoding:
+      charset: utf-8
+#使用属性自定义Ribbon客户端
+springCloud-Consumer1:
+  ribbon:
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+#不使用eureka配置
+#springCloud-Provider:
+#  ribbon:
+#    listOfServers: localhost:8001,localhost:8002
