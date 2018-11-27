@@ -28,6 +28,10 @@ eureka:
       defaultZone: http://user:password123@peer1:8761/eureka/
   instance:
     prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10 #续约更新时间默认30秒生产使用默认
+    lease-expiration-duration-in-seconds: 30 #续约到期时间默认90秒生产使用默认
+    instance-id: ${spring.cloud.client.ipAddress}:${server.port}
+#    appname: springCloud-Provider #与spring.application.name配置效果一样两个配置一个就可以
 #    ip-address: 127.0.0.1 #手动指定ip地址
 spring:
   cloud:

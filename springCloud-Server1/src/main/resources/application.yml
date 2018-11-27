@@ -21,8 +21,6 @@ sidecar:
   port: 8060                                      # Node.js微服务的端口
   health-uri: http://localhost:8060/health.json
 eureka:
-  server:
-    enable-self-preservation: false #禁用eureka的自我保护模式（一般设置为开启默认开启）
   client:
       register-with-eureka: false #不将自己注册到eureka服务（高可用配置时不用设置）
       fetch-registry: false
@@ -30,3 +28,6 @@ eureka:
         defaultZone: http://user:password@${eureka.instance.hostname}:${server.port}/eureka/
   instance:
     hostname: peer1
+  server:
+    eviction-interval-timer-in-ms: 30000 #清理关闭或无效的服务时间间隔默认是60秒生产使用默认
+    enable-self-preservation: false #禁用eureka的自我保护模式（一般设置为开启默认开启）
