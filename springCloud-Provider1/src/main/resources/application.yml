@@ -2,12 +2,26 @@ server:
   port: 8001
 logging:                                # 配置日志级别，让hibernate打印出执行的SQL
   level:
-    root: INFO
-    org.hibernate: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.hibernate.type.descriptor.sql.BasicExtractor: TRACE
-    org.springframework.cloud.commons.util.InetUtils: TRACE   # 开启这边的日志，可以打印出Spring查找网卡的过程
-    org.springframework.cloud.sleuth: DEBUG
+    #整合sleuth
+    root: info
+    org:
+      springframework:
+        web:
+          servlet:
+            DispatcherServley: debug
+            #整合sleuth结束
+        cloud: DEBUG
+          sleuth: DEBUG
+        boot: DEBUG
+          commons:
+            util:
+              InetUtils: TRACE
+      hibernate: INFO
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+              BasicExtractor: TRACE
 eureka:
   client:
     serviceUrl:
@@ -22,6 +36,7 @@ spring:
         preferred-networks: #使用正则表达式指定使用的网络地址
                 - 192.168
                 - 10.1
+                - 127.0
         ignored-interfaces:   #忽略指定名称的网卡
                 - docker0
                 - veth.*

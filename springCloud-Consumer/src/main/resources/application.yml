@@ -1,0 +1,11 @@
+server:
+  port: 8011
+spring:
+  application:
+    name: springCloud-Consumer
+eureka:
+  client:
+    service-url:
+      defaultZone: http://user:password123@peer1:8761/eureka/
+  instance:
+    prefer-ip-address: true

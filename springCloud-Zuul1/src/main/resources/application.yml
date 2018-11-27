@@ -1,0 +1,21 @@
+server:
+  port: 8021
+spring:
+  application:
+    name: springCloud-Zuul1
+eureka:
+  client:
+    service-url:
+      defaultZone: http://user:password123@peer1:8761/eureka/
+  instance:
+    prefer-ip-address: true
+zuul:
+  host:
+    connect-timeout-millis: 3000
+    socket-timeout-millis: 60000
+  routes:
+    springCloud-Provider: /user/**
+sidecar:
+  port: 8080 #非jvm应用暴露的端口
+  health-uri: http://localhost:8080/health #非jvm应用的请求路径
+#@EnableSidecar整合了 @EnableZuulProxy  访问http://localhost:8021/routes可以查看注册在eureka上的服务

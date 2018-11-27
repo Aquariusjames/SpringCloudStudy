@@ -38,10 +38,10 @@ public class MovieControllerDecoder {
   public MovieControllerDecoder(Decoder decoder, Encoder encoder, Client client, Contract contract) {
     // 这边的decoder、encoder、client、contract，可以debug看看是什么实例。
     this.userUserFeignClient = Feign.builder().client(client).encoder(encoder).decoder(decoder).contract(contract)
-            .requestInterceptor(new BasicAuthRequestInterceptor("user", "password1")).target(UserFeignClient.class, "http://springCloud-Provider/");
+            .requestInterceptor(new BasicAuthRequestInterceptor("user", "password1")).target(UserFeignClient.class, "http://springCloud-Provider/auth/");
     this.adminUserFeignClient = Feign.builder().client(client).encoder(encoder).decoder(decoder).contract(contract)
             .requestInterceptor(new BasicAuthRequestInterceptor("admin", "password2"))
-            .target(UserFeignClient.class, "http://springCloud-Provider/");
+            .target(UserFeignClient.class, "http://springCloud-Provider/auth/");
   }
 
   @GetMapping("/user-user/{id}")

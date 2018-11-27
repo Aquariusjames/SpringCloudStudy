@@ -14,5 +14,11 @@
         <module>springCloud-Provider2</module>
         <module>springCloud-Provider1</module>
         <module>springCloud-Consumer1</module>
+        <module>springCloud-Consumer</module>
+        <module>springCloud-Zuul</module>
+        <module>springCloud-Zuul1</module>
+        <module>springCloud-ConfigServer1</module>
+        <module>springCloud-SleuthWithELK</module>
+        <module>springCloud-Zipkinserver1</module>
     </modules>
 </project>

@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: springCloud-SleuthWithELK
+#  cloud:
+#    config:
+#      #对应Config Server的地址
+#      uri: http://localhost:8031/
+#      #profile对应configServer 所获取的【配置文件中的{profile}
+#      profile: dev
+#      #git仓库 的分支
+#      label: master
+#      discovery:
+#        enabled: true  #开启通过服务发现组件访问springCloud-ConfigServer1
+#        service-id: springCloud-ConfigServer1  #指定config server在服务发现组件中的servieId
+#      username: user
+#      password: password123
+#  application:
+#    #对应Config Server所获取配置文件中的{application}
+#    name: springCloud-provider
+eureka:
+  client:
+    service-url:
+      defaultZone: http://peer1:8761/eureka/
+
+#首先我们先要测试server端是否可以读取到github上面的配置信息，直接访问：http://localhost:8080/application-dev.peoperties
+
+#仓库中的配置文件会被转换成web接口，访问可以参照以下的规则：
+#
+#/{application}/{profile}[/{label}]
+#/{application}-{profile}.yml
+#/{label}/{application}-{profile}.yml
+#/{application}-{profile}.properties
+#/{label}/{application}-{profile}.properties
+#以neo-config-dev.properties为例子，它的application是neo-config，profile是dev。client会根据填写的参数来选择读取对应的配置。
+#与spring-cloud相关的属性必须配置在bootstrap.properties中，config部分内容才能被正确加载。
+#因为config的相关配置会先于application.properties，而bootstrap.properties的加载也是
+#先于application.properties
+
+#spring.application.name：对应{application}部分
+#spring.cloud.config.profile：对应{profile}部分
+#spring.cloud.config.label：对应git的分支。如果配置中心使用的是本地存储，则该参数无用
+#spring.cloud.config.uri：配置中心的具体地址
+
+#spring.cloud.config.discovery.service-id：指定配置中心的service-id，便于扩展为高可用配置集群

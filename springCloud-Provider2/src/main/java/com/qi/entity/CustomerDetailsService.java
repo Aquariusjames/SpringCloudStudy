@@ -12,12 +12,20 @@ import java.util.Collection;
 
 @Component
 public class CustomerDetailsService implements UserDetailsService {
+	/**
+	 * 模拟两个账户：
+	 * ① 账号是user，密码是password1，角色是user-role
+	 * ② 账号是admin，密码是password2，角色是admin-role
+	 */
 	@Override
 	public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
 		if ("user".equals(userName)){
-			return new SecurityUser();
+			return new SecurityUser("user", "password1", "user-role");
+		}else if ("admin".equals(userName)) {
+			return new SecurityUser("admin", "password2", "admin-role");
+		} else {
+			return null;
 		}
-		return null;
 	}
 }
 

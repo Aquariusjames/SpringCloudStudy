@@ -2,7 +2,7 @@ server:
   port: 8040
 spring:
   application:
-    name: springCloud-Server1
+    name: microservice-gateway-zuul
 eureka:
   client:
     service-url:
@@ -10,5 +10,4 @@ eureka:
   instance:
     prefer-ip-address: true
 zuul:
-  routes:
-    microservice-provider-user: /user/**
+  ignored-services: microservice-provider-user,microservice-consumer-movie

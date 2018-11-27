@@ -1,0 +1,23 @@
+server:
+  port: 8020
+spring:
+  application:
+    name: springCloud-Zuul
+eureka:
+  client:
+    service-url:
+      defaultZone: http://user:password@peer1:8761/eureka/
+  instance:
+    prefer-ip-address: true
+zuul:
+  SendResponseFilter:
+    post:
+      disable: true   #禁用该过滤器
+  PreRequestLogZuulFilter:
+    pre:
+      disable: true   #禁用该过滤器
+  routes:
+    springCloud-Provider: /user/**  #将springCloud-Provider服务映射到/user/**路径
+  ignored-services: springCloud-Ignored #忽略的服务
+#  sensitive-headers: Cookie,Set-Cookie,Authorization #全局指定敏感Header
+#  ignored-headers: Header1,Header2 #忽略header

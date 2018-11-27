@@ -1,6 +1,7 @@
 package com.qi.controller;
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.qi.entity.User;
 import com.qi.feign.UserFeignClient;
 import org.slf4j.Logger;
@@ -42,6 +43,20 @@ public class MovieController {
     user.setId(-1L);
     user.setName("默认用户");
     return user;
+  }
+
+  /**
+   * SEMAPHORE信号量容错隔离策略 默认是THREAD线程隔离策略 正常情况下保持默认即可
+   * 信号量一般适用于非网络调用的隔离调用，负载非常高时（每个实例每秒调用数百次）使用THREAD开销回比较高
+   * @param id
+   * @return
+   */
+  @GetMapping("/hystrixProperties/{id}")
+  @HystrixCommand(fallbackMethod = "findByIdFallback", commandProperties = {@HystrixProperty(name = "excution.isolation.thread.timeoutInMilliseconds", value = "5000"),
+          @HystrixProperty(name = "metrics.rollingStats.timeInMilliseconds", value = "10000"), @HystrixProperty(name = "excution.isolation.strategy", value = "SEMAPHORE")},
+          threadPoolProperties = {@HystrixProperty(name = "corSize", value = "1"), @HystrixProperty(name = "maxQueueSize", value = "10")})
+  public User findById2(@PathVariable Long id){
+    return this.userFeignClient.findById(id);
   }
 
   @GetMapping("/log-user-instance")

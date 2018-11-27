@@ -1,0 +1,42 @@
+server:
+  port: 8031
+spring:
+  application:
+    name: springCloud-ConfigServer1
+  cloud:
+    config:
+      server:
+        git:
+          #git仓库地址
+          uri: https://github.com/wozhuchenfu/config #访问http://localhost:8031/application/dev 可以访问仓库中的application-dev.properties文件
+          #仓库账号
+          username: wozhuchenfu
+          #仓库密码
+          password: qijingyu12345678
+        health:
+          repositories:
+            a-foo:
+              label: application-test
+  #添加用户认证
+  security:
+    user:
+      name: user
+      password: password123
+
+#端点与配置文件的映射规则；{label}对应仓库的分支默认是master
+#          /{application}/{profile}[/{label}]
+#          /{application}-{profile}.yml
+#          /{label}/{application}-{profile}.yml
+#          /{application}-{profile}.properties
+logging:
+  level:
+    org.springframwork.cloud: debug
+    org.springframwork.boot: debug
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://user:password123@peer1:8761/eureka/
+#          /{label}/{application}-{profile}.properties
+#config server 的高可用可以启动多个config server注册到eureka 也可以利用负载均衡器代理多个config server
