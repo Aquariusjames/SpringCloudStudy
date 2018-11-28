@@ -20,5 +20,6 @@
         <module>springCloud-ConfigServer1</module>
         <module>springCloud-SleuthWithELK</module>
         <module>springCloud-Zipkinserver1</module>
+        <module>springCloud-DockerDemo</module>
     </modules>
 </project>
