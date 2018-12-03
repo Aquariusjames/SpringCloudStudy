@@ -1,7 +1,13 @@
-FROM java:8
-MAINTAINER qi
-
-#COPY 拷贝jar包
-COPY target/springCloud-DockerDemo-1.0.jar   /springCloud-DockerDemo.jar
-
-ENTRYPOINT ["java","-jar","springCloud-DockerDemo.jar"]
+#基于哪个镜像创建
+FROM anImage:tag
+#设置环境变量
+ENV enviromentValue=value
+#设置一个作者签名
+MAINTAINER name emmailaddress
+#执行的命令
+ENTRYPOINT ['java','-jar','xxx.jar']
+CMD java -jar /.../xxx.jar  --enviromentValue=value
+#copy命令
+COPY /filename /directory/filename
+#设置对外端口
+EXPOSE 8080
