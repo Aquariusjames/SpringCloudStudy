@@ -1,9 +1,9 @@
 ># 拉取mysql镜像
 
 >##docker pull mysql:tag
- #设置主机网络
+ #设置主机网络 不设置有可能连接不到服务
  [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
- [解决办法]：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
+解决办法：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
 
 ##启动 docker run -it --name mysql -e MYSQL_ROOT_PASSWORD=password -d mysql:tag
 设置数据库参数
@@ -78,12 +78,11 @@ $ ls -l foobar
 名称后通过冒号设置相应的权限。比如在前面的例子中，如果想以只读方式将工作目录挂
 载到 /cookbook，可以使用 -v "$PWD":/cookbook:ro 。可以通过 docker inspect 命令来查看
 数据卷的挂载映射情况。参考范例 9.1 可以获取更多有关 inspect 的介绍。
-$ docker inspect -f {{.Mounts}} 44d71a605b5b
-[{ /Users/sebastiengoasguen/Desktop /cookbook true}]
+docker inspect -f {{.Mounts}} 44d71a605b5b
 #获取容器的ip
-docker inspect --format '{{ .NetworkSettings.IPAddress }}' [containerID]
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
 >#安装lsof查看网络 yum install -y lsof
-#查看端口占用 lsof -i:[端口号]
+#查看端口占用 lsof -i:端口号
   查看进程 ps -aux|grep tomcat
 
 
