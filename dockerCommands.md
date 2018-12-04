@@ -82,6 +82,9 @@ $ docker inspect -f {{.Mounts}} 44d71a605b5b
 [{ /Users/sebastiengoasguen/Desktop /cookbook true}]
 #获取容器的ip
 docker inspect --format '{{ .NetworkSettings.IPAddress }}' [containerID]
+>#安装lsof查看网络 yum install -y lsof
+#查看端口占用 lsof -i:[端口号]
+  查看进程 ps -aux|grep tomcat
 
 
 
