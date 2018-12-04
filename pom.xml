@@ -21,5 +21,6 @@
         <module>springCloud-SleuthWithELK</module>
         <module>springCloud-Zipkinserver1</module>
         <module>springCloud-DockerDemo</module>
+        <module>springCloud-Sentinel</module>
     </modules>
 </project>

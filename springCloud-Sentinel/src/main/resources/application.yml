@@ -1,0 +1,60 @@
+server:
+  port: 8012
+## INFO
+info:
+  app:
+    name: @project.artifactId@
+    encoding: @project.build.sourceEncoding@
+    java:
+      source: @java.version@
+      target: @java.version@
+#默认访问路径http://localhost:8000/actuator/beans
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+logging:
+  level:
+    feign: DEBUG
+    com.qi.feign.UserFeignClient: debug # 将Feign接口的日志级别设置成DEBUG，因为Feign的Logger.Level只对DEBUG作出响应。
+spring:
+  application:
+    name: springCloud-Consumer1
+  rabbitmq:
+    host: localhost
+    username: guest
+    addresses: guest
+  servlet:
+    multipart:
+      max-file-size: 2000Mb
+      max-request-size: 2500Mb
+  http:
+    encoding:
+      charset: utf-8
+  cloud:
+    sentinel:
+      transport:
+        port: 8013   #sentinel控制台配置 与sentinel server通信端口为7080
+        dashboard: localhost:8014 #sentinel server的地址
+
+turbine:
+  app-config-list: springCloud-Comsumer1,springCloud-Provider1,springCloud-Provider2,springCloud-Comsumer
+  cluster-name-expression: "'default'"
+eureka:
+  client:
+    service-url:
+      defaultZone: http://user:password123@peer1:8761/eureka/
+  instance:
+    prefer-ip-address: true
+ribbon:
+  ReadTimeout: 60000
+  ConnectTimeout: 3000
+  MaxAutoRetries: 1 #同一台实例最大重试次数,不包括首次调用
+  MaxAutoRetriesNextServer: 1 #重试负载均衡其他的实例最大重试次数,不包括首次调用
+  OkToRetryOnAllOperations: false  #是否所有操作都重试
+#    listOfServers: localhost:8001,localhost:8002
