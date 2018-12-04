@@ -1,6 +1,9 @@
 ># 拉取mysql镜像
 
 >##docker pull mysql:tag
+ #设置主机网络
+ [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
+ [解决办法]：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
 
 ##启动 docker run -it --name mysql -e MYSQL_ROOT_PASSWORD=password -d mysql:tag
 设置数据库参数
@@ -77,7 +80,8 @@ $ ls -l foobar
 数据卷的挂载映射情况。参考范例 9.1 可以获取更多有关 inspect 的介绍。
 $ docker inspect -f {{.Mounts}} 44d71a605b5b
 [{ /Users/sebastiengoasguen/Desktop /cookbook true}]
-
+#获取容器的ip
+docker inspect --format '{{ .NetworkSettings.IPAddress }}' [containerID]
 
 
 
