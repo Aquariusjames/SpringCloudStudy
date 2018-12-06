@@ -140,11 +140,31 @@ $ ls -l foobar
 载到 /cookbook，可以使用 -v "$PWD":/cookbook:ro 。可以通过 docker inspect 命令来查看
 数据卷的挂载映射情况。参考范例 9.1 可以获取更多有关 inspect 的介绍。
 docker inspect -f {{.Mounts}} 44d71a605b5b
+#删除容器及它的卷
+docker rm -v [continaerID]|[containerName]
 #获取容器的ip
 docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
 >#安装lsof查看网络 yum install -y lsof
 #查看端口占用 lsof -i:端口号
   查看进程 ps -aux|grep tomcat
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
