@@ -196,8 +196,21 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
         docker import --help
         docker import将container导入后会成为一个image，而不是恢复为一个container
 # 创建和共享镜像
-
-
+    通过 docker commit 命令提交你对容器做出的修改，并创建一个新镜像。
+    例：以交互式bash shell 的方式启动一个容器，并更新其中的软件包： docker run -it ubuntu:14.04 /bin/bash  apt-get update
+        当退出容器后，容器会停止运行，但容器还在，知道你通过docker rm命令彻底删除容器。所以在删除容器前，可以提交对容器做出的修改，
+        并以此创建一个新的镜像 ubuntu:update。镜像的名称为ubuntu，同时添加了一个标签update，以与ubuntu:latest镜像加以区分。
+        提交你对容器做出的修改，并创建一个新镜像 docker commit [containerID] ubuntu:update
+        查看创建的镜像 docker images
+        查看在容器中对镜像做出的修改 docker diff [containerID]  A 表示文件或者文件夹是新增加的， C 表示文件内容有修改， D 则表示该项目已经删除。
+## 将镜像和容器保存为tar文件进行共享
+    对于已有镜像，可以使用docker的命令save和load命令来创建一个压缩包(tarball)；而对于容器，可以使用import和export进行导入导出操作。
+    例： docker ps -a
+    docker export [containerID] > update.tar
+    ls
+    可以在本地将容器提交为一个新镜像，但是也可以使用 docker import命令；
+    docker import - update < update.tar
+    docker images
 
 
 
