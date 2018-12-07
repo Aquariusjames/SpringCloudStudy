@@ -211,6 +211,101 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
     可以在本地将容器提交为一个新镜像，但是也可以使用 docker import命令；
     docker import - update < update.tar
     docker images
+# 编写Dockerfile
+    以交互方式启动一个容器，在里面对容器进行修改，将修改后的容器提交为镜像，这样也
+    能正常工作。但是你想自动构建镜像，并且将构建步骤与他人共享。
+        要想自动构建 Docker 镜像，你需要通过一个名为 Dockerfile 的说明文件来描述镜像构建的
+    步骤。这个文本文件使用一组指令来描述以下各项内容：新镜像的基础镜像，为了安装不
+    同的依赖和应用程序需要执行哪些操作步骤，镜像中需要提供哪些文件，这些文件是怎么
+    复制到镜像中的，要暴露哪些端口，以及在新的容器中启动时默认运行什么命令，此外还
+    有一些其他的内容。
+        为了对此进行说明，让我们开始编写我们的第一个 Dockerfile。从该 Dockerfile 构建的镜像
+    启动新的容器时，会执行 /bin/echo 命令。在当前工作目录中创建一个名为 Dockerfile 的
+    文本文件，文件内容如下所示。
+    FROM ubuntu:14.04
+    ENTRYPOINT ["/bin/echo"]
+    FROM 指令指定了新的镜像以哪个镜像为基础开始构建。这里我们选择了 ubuntu:14.04 镜像
+    作为基础镜像。ubuntu:14.04 是来自 Docker Hub 上由 Ubuntu 官方提供的镜像仓库（https://
+    registry.hub.docker.com/_/ubuntu/）。 ENTRYPOINT 指令设置了从该镜像创建的容器启动时需要
+    执行的命令。
+        要想构建这个镜像，可以在命令行提示符下键入 docker build . 命令，如下
+    所示。
+        docker build .
+        现在就可以基于新构建的镜像启动容器了，你需要指定刚刚创建的镜像的 ID 并指定一个
+    参数（即 Hi Docker ! ），如下所示。
+    $ docker run e778362ca7cf Hi Docker !
+    Hi Docker !
+    非常神奇，你在新容器中执行了 echo 命令！这里你基于上面由只有两行的 Dockerfile 构建
+    的镜像创建了一个容器，该容器开始运行并执行了由 ENTRYPOINT 指令所定义的命令。当这
+    个命令结束之后，容器的工作也即告结束并退出。如果再次运行上述命令但是不指定任何
+    参数，那么就不会有任何内容回显出来，如下所示。
+    $ docker run e778362ca7cf
+    你也可以在 Dockerfile 文件中使用 CMD 指令。使用该指令的优点是，你可以在启动容器时，
+    通过在 docker run 命令后面指定新的 CMD 参数来覆盖 Dockerfile 文件中设置的内容。让我
+    们使用 CMD 指令来构建一个新镜像，如下所示。
+    FROM ubuntu:14.04
+    CMD ["/bin/echo" , "Hi Docker !"]
+    构建这个镜像并运行它，如下所示。
+    $ docker build .
+    ...
+    $ docker run eff764828551
+    Hi Docker !
+        非常神奇，你在新容器中执行了 echo 命令！这里你基于上面由只有两行的 Dockerfile 构建
+    的镜像创建了一个容器，该容器开始运行并执行了由 ENTRYPOINT 指令所定义的命令。当这
+    个命令结束之后，容器的工作也即告结束并退出。如果再次运行上述命令但是不指定任何
+    参数，那么就不会有任何内容回显出来，如下所示。
+    $ docker run e778362ca7cf
+    你也可以在 Dockerfile 文件中使用 CMD 指令。使用该指令的优点是，你可以在启动容器时，
+    通过在 docker run 命令后面指定新的 CMD 参数来覆盖 Dockerfile 文件中设置的内容。让我
+    们使用 CMD 指令来构建一个新镜像，如下所示。
+    FROM ubuntu:14.04
+    CMD ["/bin/echo" , "Hi Docker !"]
+    构建这个镜像并运行它，如下所示。
+    $ docker build .
+    ...
+    $ docker run eff764828551
+    Hi Docker !
+        在上面的构建命令中，我们指定了当前文件夹路径。这时候 Docker 会自动使
+    用刚才创建的 Dockerfile 文件。如果希望在构建镜像的时候使用在其他位置
+    保存的 Dockerfile，可以使用 docker build 命令的 -f 参数来指定 Dockerfile
+    文件的位置。
+        上面的操作看起来与之前的例子一模一样，但是，如果在 docker run 命令后面指定一个其
+    他的可执行命令，那么该命令就会被执行，而不是执行在 Dockerfile 文件中定义的 /bin/
+    echo 命令，如下所示。
+    $ docker run eff764828551 /bin/date
+    Thu Dec 11 02:49:06 UTC 2014
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
