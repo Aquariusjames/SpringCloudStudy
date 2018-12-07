@@ -5,31 +5,30 @@ https://download.docker.com/linux/centos/7/x86_64/stable/Packages/
 
 CentOS 7 (使用yum进行安装)
 yum update
-# step 1: 安装必要的一些系统工具
+#step 1: 安装必要的一些系统工具
  yum install -y yum-utils device-mapper-persistent-data lvm2
-# Step 2: 添加软件源信息
+#Step 2: 添加软件源信息
  yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-# Step 3: 更新并安装Docker-CE
+#Step 3: 更新并安装Docker-CE
  yum makecache fast
  yum -y install docker-ce
-# Step 4: 开启Docker服务
+#Step 4: 开启Docker服务
 service docker start
-# 注意：
-# 官方软件源默认启用了最新的软件，您可以通过编辑软件源的方式获取各个版本的软件包。例如官方并没有将测试版本的软件源置为可用，您可以通过以下方式开启。同理可以开启各种测试版本等。
-# vim /etc/yum.repos.d/docker-ee.repo
-#   将[docker-ce-test]下方的enabled=0修改为enabled=1
-#
+ 注意：
+ 官方软件源默认启用了最新的软件，您可以通过编辑软件源的方式获取各个版本的软件包。例如官方并没有将测试版本的软件源置为可用，您可以通过以下方式开启。同理可以开启各种测试版本等。
+ vim /etc/yum.repos.d/docker-ee.repo
+   将[docker-ce-test]下方的enabled=0修改为enabled=1
 # 安装指定版本的Docker-CE:
-# Step 1: 查找Docker-CE的版本:
-# yum list docker-ce.x86_64 --showduplicates | sort -r
-#   Loading mirror speeds from cached hostfile
-#   Loaded plugins: branch, fastestmirror, langpacks
-#   docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable
-#   docker-ce.x86_64            17.03.1.ce-1.el7.centos            @docker-ce-stable
-#   docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable
-#   Available Packages
-# Step2: 安装指定版本的Docker-CE: (VERSION例如上面的17.03.0.ce.1-1.el7.centos)
-# yum -y install docker-ce-[VERSION]
+ Step 1: 查找Docker-CE的版本:
+ yum list docker-ce.x86_64 --showduplicates | sort -r
+   Loading mirror speeds from cached hostfile
+   Loaded plugins: branch, fastestmirror, langpacks
+   docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable
+  docker-ce.x86_64            17.03.1.ce-1.el7.centos            @docker-ce-stable
+   docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable
+   Available Packages
+ Step2: 安装指定版本的Docker-CE: (VERSION例如上面的17.03.0.ce.1-1.el7.centos)
+ yum -y install docker-ce-[VERSION]
 安装校验
 root@iZbp12adskpuoxodbkqzjfZ:$ docker version
 我的第一个docker仓库地址 https://hub.docker.com/r/wozhuchenfu/mydockerrepositoryfirst/
@@ -59,8 +58,7 @@ systemctl start docker
 systemctl enable docker
 
 ># 拉取mysql镜像
-
->##docker pull mysql:tag
+##docker pull mysql:tag
  #设置主机网络 不设置有可能连接不到服务
  [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
 解决办法：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
@@ -137,8 +135,8 @@ $ ls -l foobar
 -rw-r--r-- 1 root root 0 Mar 11 11:42 foobar
 默认情况下，Docker 会以读写模式挂载数据卷。如果想以只读方式挂载数据卷，可以在卷
 名称后通过冒号设置相应的权限。比如在前面的例子中，如果想以只读方式将工作目录挂
-载到 /cookbook，可以使用 -v "$PWD":/cookbook:ro 。可以通过 docker inspect 命令来查看
-数据卷的挂载映射情况。参考范例 9.1 可以获取更多有关 inspect 的介绍。
+载到 /cookbook，可以使用 -v "$PWD":/cookbook:ro 。
+#通过 docker inspect 命令来查看数据卷的挂载映射情况。
 docker inspect -f {{.Mounts}} 44d71a605b5b
 #删除容器及它的卷
 docker rm -v [continaerID]|[containerName]
@@ -147,17 +145,57 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
 >#安装lsof查看网络 yum install -y lsof
 #查看端口占用 lsof -i:端口号
   查看进程 ps -aux|grep tomcat
-
-
-
-
-
-
-
-
-
-
-
+#在容器之间共享数据（数据卷）
+将容器中的卷共享给其他容器，可以使用 --volumes-from 选项
+  例：docker run -v /data --name data ubuntu:14.04
+      查看数据卷挂载情况 docker inspect -f {{.Mounts}} [containerID]
+  这个容器并没有处于运行状态。但是它的卷映射关系已经存在，并且卷被持
+  久化到了 /var/lib/docker/vfs/dir 下面。你可以通过 docker rm -v data 命令来
+  删除容器和它的卷。如果你没有使用 rm -v 选项来删除容器和它的卷，那么
+  系统中将会遗留很多没有被使用的卷。
+#即使这个数据容器没有运行，你也可以通过 --volumes-from 来挂载其中的卷
+ 例：docker run -it --volumes-from data ubuntu:14.04 /bin/bash
+     touch /data/foobar
+     exit
+     ls /var/lib/docker/volumes/...
+# 对容器进行数据复制
+你有一个运行中的容器，没有设置任何卷映射信息，但是你想从容器内复制数据出来或者
+将数据复制到容器里。
+ 使用 docker cp 命令将文件从正在运行的容器复制到Docker主机。 docker cp 命令支持在 Docker主机与容器之间进行文件复制。
+ 例：首先启动一个容器（或进入启动中的容器） docker run -d  --name testcopy ubuntu:14.04 sleep 360 启动一个容器并执行睡眠操作
+     进入容器 docker exec -it testcopy bash
+        cd /root
+        echo 'I am in the container' > file.txt
+        exit
+     将在容器中创建的这个文件复制到宿主机上，使用 docker cp命令
+        docker cp testcopy:/root/file.txt .  复制到宿主机当前目录
+     查看复制文件 cat file.txt
+  将文件从宿主机复制到容器，仍然可以用docker cp命令只不过源和目的文件换一下位置
+    echo 'I am in the host' > host.txt
+    cat host.txt
+    docker cp host.txt testcopy:/root/host.txt
+  两个容器间文件的复制：可以利用宿主机作为中转站，执行两次docker cp命令实现
+    docker cp c1:/root/file.txt .
+    docker file.txt c2:/root/file.txt
+# docker java容器运行springBoot.jar应用
+    例：docker run -it --name java -p 8080:8080(jar包中应用用的端口) -d java:8u111
+    拷贝jar包到容器 docker cp /**/springboot.jar java:/root/application.jar
+    进入容器 docker exec -it java bash
+    启动jar  java -jar /root/application.jar -&
+# 导出/入镜像
+    导出:
+        docker save image.tar [containerIDs.../imageNames...]
+        docker save如果指定的是container，docker save将保存的是容器背后的image  docker save可以将多个镜像打包到一个tar包
+        docker export [containerID] |[gzip](gzip压缩) > containername.tar
+        docker export是用来将container的文件系统进行打包的 docker export需要指定container，不能像docker save那样指定image或container都可以
+    导入:
+        docker load -i iamge.tar   docker load不能载入容器包
+        如果本地镜像库已经存在这个镜像，将会被覆盖
+        docker save的应用场景是，如果你的应用是使用docker-compose.yml编排的多个镜像组合，但你要部署的客户服务器并不能连外网。这时，你可以使用docker save将用到的镜像打个包，然后拷贝到客户服务器上使用docker load载入。
+        docker import container.tar importcontainername:tag 将打包的container载入进来使用docker import
+        docker import --help
+        docker import将container导入后会成为一个image，而不是恢复为一个container
+# 创建和共享镜像
 
 
 
