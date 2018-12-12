@@ -6,6 +6,7 @@ systemctl disable NetworkManager
 systemctl start network.service
 # centos7 ping www.baidu.com ping 不通。
 vi /etc/resolv.conf 添加 nameserver 8.8.8.8
+                         search localdomain
 ifcfg-ethxx DNS=8.8.8.8
 # centos6克隆后的系统和原系统MAC地址和UUID一样，删除UUID和MAC地址
 vi /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -15,3 +16,25 @@ rm -f 70-presistent-net.rules
 重启系统后，再重启网卡即可
 reboot
 service network restart
+
+
+#centos7.6网络配置
+TYPE=Ethernet
+PROXY_METHOD=none
+BROWSER_ONLY=no
+BOOTPROTO=static
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+IPV6_ADDR_GEN_MODE=stable-privacy
+NAME=ens33
+UUID=b75fb46b-0ec5-48ac-acec-20faedbc71b1
+DEVICE=ens33
+ONBOOT=yes
+IPADDR=192.168.84.23
+NETMASK=255.255.255.0
+NM_CONTROLLED=no
+GATEWAY=192.168.84.11
