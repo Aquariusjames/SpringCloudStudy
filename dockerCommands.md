@@ -57,11 +57,12 @@ systemctl start docker
 配置Docker开机自启动
 systemctl enable docker
 
-># 拉取mysql镜像
-##docker pull mysql:tag
- #设置主机网络 不设置有可能连接不到服务
+# 设置主机网络 不设置有可能连接不到服务
  [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
 解决办法：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
+
+># 拉取mysql镜像
+##docker pull mysql:tag
 
 ##启动 docker run -it --name mysql -e MYSQL_ROOT_PASSWORD=password -d mysql:tag
 设置数据库参数
@@ -142,6 +143,8 @@ docker inspect -f {{.Mounts}} 44d71a605b5b
 docker rm -v [continaerID]|[containerName]
 #获取容器的ip
 docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
+docker exec -ti [containerName] ip add | grep global
+10 个获取 Docker 容器 IP 地址的例子（http://networkstatic.net/10-examples-of-how-to-get-docker-container-ip-address/）
 >#安装lsof查看网络 yum install -y lsof
 #查看端口占用 lsof -i:端口号
   查看进程 ps -aux|grep tomcat
@@ -274,6 +277,208 @@ docker inspect --format '{{ .NetworkSettings.IPAddress }}' 【containerID】
     echo 命令，如下所示。
     $ docker run eff764828551 /bin/date
     Thu Dec 11 02:49:06 UTC 2014
+        Dockerfile 是一个文本文件，它定义了一个镜像是如何构建的，以及基于该镜像创建的容
+    器运行时会进行什么处理。通过 FROM 、 ENTRYPOINT 和 CMD 这三个简单的指令，你已经可
+    以构建一个能完全正常工作的镜像了。当然，我们在该范例中也只是介绍了这三个指令而
+    已，你可以通过阅读 Dockerfile 参考手册（https://docs.docker.com/reference/builder/）学习
+    一下其他指令。
+        CentOS 项目维护着很多 Dockerfile 的例子。可以在该项目的代码仓库
+  （https://github.com/CentOS/CentOS-Dockerfiles）中查看这些例子，并通过运
+    行其中的一些例子来加深对 Dockerfile 文件的理解。
+    通过 docker build 命令的 -t 参数设置仓库名  docker build -t [imagenaem:tag] . 注意后边的 . 表示Dockerfile文件在执行命令的文件夹下。
+    Dockerfile最佳实践 https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+    CentOS 项 目 中 提 供 的 大 量 Dockerfile 文 件 示 例 https://github.com/CentOS/CentOS-Dockerfiles
+        使用 .dockerignore 文件。在镜像构建过程中，Docker 会将 Dockerfile 所在文件夹下的内
+    容（即 build context）复制到构建环境中。使用 .dockerignore 文件可以将指定文件或者
+    文件夹在镜像构建时从文件复制列表中排除。如果你不使用 .dockerignore 文件，请确
+    保在只有所需最小集合的文件夹下构建镜像。请参考一下 .dockerignore 的语法（https://
+    docs.docker.com/reference/builder/#dockerignore-file）
+        docker tag 命令的帮助信息很简洁，它显示了 Docker 镜像的
+    命名规则，即如何指定正确的命名空间，可以是一个本地的镜像，或者在 Docker Hub 上，
+    或者在私有 registry 上，如下所示。
+    $ docker tag -h
+    Usage: docker tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]
+    Tag an image into a repository
+    -f, --force=false Force
+##将镜像发布到Docker Hub
+    使用 Docker 命令行工具将这个镜像推送到你的公开仓库中。这需要执行以下三个步骤才
+    能完成。
+    (1) 通过 docker login 命令来登录 Docker Hub，这会要求你输入 Docker Hub 凭据。
+    (2) 使用你 Docker Hub 上的用户名为已有镜像打标签。
+    (3) 将新打完标签的镜像推送到 Docker Hub。
+    登录过程会将你的 Docker Hub 凭据保存到文件 ~/.dockercfg 中，如下所示。
+    $ docker login
+    Username: how2dock
+    Password:
+    Email: how2dock@gmail.com
+    Login Succeeded
+    $ cat ~/.dockercfg
+    {"https://index.docker.io/v1/":{"auth":"..........",
+    "email":"how2dock@gmail.com"}}
+    如果查看一下当前你所拥有的镜像，你会看到构建的 Flask 镜像使用了一个
+    本地仓库名以及 latest 标签，如下所示。
+    $ docker images
+    REPOSITORY TAG IMAGE ID CREATED VIRTUAL SIZE
+    flask latest 88d6464d1f42 5 days ago 354.6 MB
+    ...
+    要想将这个镜像推送到你的 Docker Hub 账号下，你需要通过 docker tag 命令使用你在
+    Docker Hub 上的仓库为这个镜像打标签，如下所示。
+    $ docker tag flask how2dock/flask
+    sebimac:flask sebgoa$ docker images
+    REPOSITORY TAG IMAGE ID CREATED VIRTUAL SIZE
+    flask latest 88d6464d1f42 5 days ago 354.6 MB
+    how2dock/flask latest 88d6464d1f42 5 days ago 354.6 MB
+    现在你的 Flask 镜像有了一个 how2dock/flask 的仓库名，这也符合 Docker Hub 的仓库命名
+    规则。你已经可以推送镜像了。Docker 会推送这个组成镜像的各个镜像层；如果这个镜像
+    层在 Docker Hub 上已经存在了，那么这个层就会被略过。在镜像推送完成之后，你就可
+    以在你的 Docker Hub 页面上看到 how2dock/flask 镜像了，并且所有人都可以通过 docker
+    pull how2dock/flask 来下载这个镜像（参见图 2-1），如下所示。
+    $ docker push how2dock/flask
+    The push refers to a repository [how2dock/flask] (len: 1)
+    Sending image list
+    Pushing repository how2dock/flask (1 tags)
+    511136ea3c5a: Image already pushed, skipping
+    01bf15a18638: Image already pushed, skipping
+    ...
+    dc4a9a43bb7f: Image successfully pushed
+    e394b9fbe3fa: Image successfully pushed
+    3f7abcdc10d4: Image successfully pushed
+    88d6464d1f42: Image successfully pushed
+    Pushing tag for rev [88d6464d1f42] on
+    {https://cdn-registry-1.docker.io/v1/repositories/how2dock/flask/tags/latest}
+##运行私有registry
+    使用 Docker Hub 非常简单。然而，你可能在数据治理方面比较关心将镜像托管在自己基础
+    设施之外所带来的风险。因此，你希望在自己的基础设施之上运行自己的 Docker registry。
+    2.11.2　解决方案
+    使用 Docker registry 镜像（https://hub.docker.com/_/registry/）创建一个容器。这样，你就拥
+    有了一个私有的 registry。
+    拉取 registry 镜像并以守护方式启动一个容器。然后，你可以通过 curl 访问 http://
+    localhost:5000/v2 来确认一下 registry 是否正常运行，如下所示。
+    $ docker pull registry:2
+    $ docker run -d -p 5000:5000 registry:2
+    $ curl -i http://localhost:5000/v2/
+    HTTP/1.1 200 OK
+    Content-Length: 2
+    Content-Type: application/json; charset=utf-8
+    Docker-Distribution-Api-Version: registry/2.0
+    Date: Wed, 19 Aug 2015 23:07:47 GMT
+    上面的输出结果显示了 Docker registry 正在运行，其 API 版本为 v2。要想使用这个私有
+    registry，需要按照正确的命名规则，为你之前创建的本地镜像（比如在范例 2.4 中创建的
+    flask 镜像）打上标签。在我们的例子中，registry 运行在 http://localhost:5000 上，所以我们
+    打标签的时候会使用 localhost:5000 作为前缀，并将这个镜像推送到私有 registry。也可
+    以使用 Docker 主机的 IP 地址，如下所示。
+    $ docker tag busybox localhost:5000/busy
+    $ docker push localhost:5000/busy
+    The push refers to a repository [localhost:5000/busy] (len: 1)
+    8c2e06607696: Image successfully pushed
+    6ce2e90b0bc7: Image successfully pushed
+    cf2616975b4a: Image already exists
+    latest: digest: sha256:3b5b980...a4d59f24f9c7253fce29 size: 5049
+    创建和共享镜像 ｜ 55
+    如果从其他计算机访问这个私有 registry，你会收到一个错误消息，提示你的 Docker 客户
+    不能使用一个不安全的 registry。如果是测试环境（生产环境不建议这样操作），可以编辑
+    你的 Docker 配置文件，增加 insecure-registry 选项。比如，在 Ubuntu 14.04 上编辑 /etc/
+    default/docker 文件，添加如下一行。
+    DOCKER_OPTS="--insecure-registry <IP_OF_REGISTRY>:5000"
+    重新启动 Docker 服务（ sudo service docker restart ），然后再次访问远程私有 registry。
+    （记住，需要在 registry 所在计算机之外的其他计算机上进行上述操作。）
+##参考
+    • Docker Hub 上的 Docker registry 主页（https://hub.docker.com/）
+    • GitHub 上更丰富的文档（https://github.com/docker/distribution）
+    • registry 部署说明（https://docs.docker.com/registry/deploying/）
+    自动构建参考文档（https://docs.docker.com/docker-hub/builds/）
+##使用Git钩子和私有registry建立本地自动构建环境
+        使用 Docker Hub、GitHub 或者 Bitbucket 进行自动构建非常实用（参见范例 2.12），但是你
+    可能正在使用私有 registry（比如一个本地的 hub），并且希望在向本地的 Git 项目中推送代
+    码时触发 Docker 镜像构建。
+    解决方案;
+        创建一个 Git 的 post-commit 钩子，由它来触发一个构建并将新镜像推送到你的私有 registry。
+    在你 Git 项目的根文件夹下创建一个 bash 脚本 ./git/hooks/post-commit，它的内容比较简
+    单，如下所示。
+    #!/bin/bash
+    tag=`git log -1 HEAD --format="%h"`
+    docker build -t flask:$tag /home/sebgoa/docbook/examples/flask
+    使用 chmod +x .git/hooks/post-commit 命令将文件的属性设置为可执行。
+    现在，每当你向 Git 项目中提交代码，bash 脚本 post-commit 都会被执行。它将会使用提
+    交 SHA 的简短散列字符串作为新的 tag ，并使用指定 Dockerfile 文件触发一次构建。之后
+    它就会构建一个新的名为 flask 的镜像，并使用由程序生成的标签。
+    $ git commit -m "fixing hook"
+    9c38962
+    Sending build context to Docker daemon 3.584 kB
+    Sending build context to Docker daemon
+    Step 0 : FROM ubuntu:14.04
+    ---> 9bd07e480c5b
+    创建和共享镜像 ｜ 61
+    Step 1 : RUN apt-get update
+    ---> Using cache
+    ---> e659c9e9ba21
+    <snip>
+    Removing intermediate container 05c13744c7bf
+    Step 8 : CMD python /tmp/hello.py
+    ---> Running in 124cd2ada52d
+    ---> 9a50c7b2bee9
+    Removing intermediate container 124cd2ada52d
+    Successfully built 9a50c7b2bee9
+    [master 9c38962] fixing hook
+    1 file changed, 1 insertion(+), 1 deletion(-)
+    $ docker images
+    REPOSITORY TAG IMAGE ID CREATED VIRTUAL SIZE
+    flask 9c38962 9a50c7b2bee9 5 days ago 354.6 MB
+    尽管上面的方法能正常工作，并且它只使用了两行 bash 代码，但是如果这个构建过程需要
+    花费很长时间，那么在 Git 的 post-commit 任务中进行镜像构建可能就不太切合实际了。比
+    较好的方法是使用 post-commit 钩子触发一个远程的构建，然后将新镜像推送到私有 registry。
+# 搭建私有镜像仓库
+ docker pull registry
+ docker run -d -v /opt/registry:/var/lib/registry -p 5000:5000 --restart=always --name registry registry
+ 配置私有镜像可信
+ vi /etc/docker/daemon.json
+ {"insecure-registries":["192.168.89.101:5000"]}
+#向私有镜像仓库提交/拉取镜像
+打标签
+ docker tag tomcat:8 192.168.89.101:5000/tomcat:8
+ 上传
+ docker push 192.168.89.101:5000/tomcat:8
+ 拉取
+ docker pull 192.168.89.101:5000/tomcat:8
+ 列出镜像标签
+ curl http://192.168.89.101:5000/v2/tomcat/tags/list
+# 公共镜像仓库使用(Docker Hub)
+docker tag [imagename] wozhuchenfu/[registryname]:[TAG]
+ docker tag [imagename] wozhuchenfu/test:v1
+ 登录
+ docker login
+ docker push wozhuchenfu/test:v1
+ docker pull wozhuchenfu/test:v1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
