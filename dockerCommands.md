@@ -449,10 +449,35 @@ docker tag [imagename] wozhuchenfu/[registryname]:[TAG]
  docker login
  docker push wozhuchenfu/test:v1
  docker pull wozhuchenfu/test:v1
-
-
-
-
+# docker 网络模式
+查看docker 网络模式  docker network ls
+1 brige默认 docker启动后默认启动一个docker0的网卡
+2 host 与宿主机共享网络
+3 none 获取独立的network namespace 但不为容器进行任何网络配置
+4 container 与指定的容器通用一个network namespace 网卡配置也是相同的
+5 自定义
+# docker容器日志查看
+docker logs containername
+# docker图形化界面管理
+1 dockerui
+2 shipyard（推荐）默认账户admin密码shipyard
+# 容器监控
+cAdvisor+InfluxDB+Grafana
+# docker compose
+定义和管理多容器的工具，也是一种容器的编排工具，前身是pig
+#容器跨主机通信方案
+1 桥接宿主机网络
+2 端口映射
+3 docker网络驱动
+     overlay：docker原生overlay网络
+     macvlan：
+4 第三方网络项目
+     隧道方案：
+         Flannel：
+         Weave：
+         OpenvSwitch：
+     路由方案：
+         Calico：
 
 
 
