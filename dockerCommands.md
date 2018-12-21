@@ -443,12 +443,33 @@ docker exec -ti [containerName] ip add | grep global
  列出镜像标签
  curl http://192.168.89.101:5000/v2/tomcat/tags/list
 # 公共镜像仓库使用(Docker Hub)
-docker tag [imagename] wozhuchenfu/[registryname]:[TAG]
+ docker tag local-image:tagname reponame:tagname
+ docker push reponame:tagname
+ docker tag [imagename] wozhuchenfu/[registryname]:[TAG]
  docker tag [imagename] wozhuchenfu/test:v1
  登录
  docker login
  docker push wozhuchenfu/test:v1
  docker pull wozhuchenfu/test:v1
+# docker网络
+##查看网桥工具
+    yum install bridge-utils
+    brctl show
+##容器访问外部网络
+容器要想访问外部网络，需要本地系统的转发支持。在Linux 系统中，检查转发是否打开。
+$sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+如果为 0，说明没有开启转发，则需要手动打开。
+$sysctl -w net.ipv4.ip_forward=1
+如果在启动 Docker 服务的时候设定  --ip-forward=true  , Docker 就会自动设定系统的  ip_forward  参数
+为 1。
+容器之间访问：
+    容器之间相互访问，需要两方面的支持。
+    容器的网络拓扑是否已经互联。默认情况下，所有容器都会被连接到  docker0  网桥上。
+    本地系统的防火墙软件 --  iptables  是否允许通过。
+##外部访问容器
+docker run -idt -p IP:host_port:container_port 或 docker run -idt -p host_port:container_port
+如果希望永久绑定到某个固定的IP地址，可以在Docker配置文件 /etc/default/docker 中指定 DOCKER_OPTS="--ip=IP_ADDRESS",之后重启docker服务即可生效。
 # docker 网络模式
 查看docker 网络模式  docker network ls
 1 brige默认 docker启动后默认启动一个docker0的网卡

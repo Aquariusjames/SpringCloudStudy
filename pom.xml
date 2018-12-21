@@ -22,5 +22,6 @@
         <module>springCloud-Zipkinserver1</module>
         <module>springCloud-DockerDemo</module>
         <module>springCloud-Sentinel</module>
+        <module>springCloud-Gateway</module>
     </modules>
 </project>

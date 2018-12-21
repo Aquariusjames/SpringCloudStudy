@@ -1,0 +1,93 @@
+server:
+  port: 8080
+#spring:
+#  application:
+#    name: springCloud-Gateway
+#  cloud:
+#    gateway:
+#      routes:
+#      - id: customerid   #自定义的路由ID，保持唯一
+#        uri: http://localhost:8081/    #目标服务地址
+#        predicates:        #路由条件，predicates接收一个输入参数，返回一个布尔值
+#        - Path=/test
+#  上面这段配置的意思是，配置了一个 id 为 neo_route 的路由规则，
+#  当访问地址http://localhost:8080/test时会自动转发到地址：http://localhost:8081/test
+#  。配置完成启动项目即可在浏览器访问进行测试
+#  转发功能同样可以通过代码来实现，我们可以在启动类中添加方法 customRouteLocator() 来定制转发规则。
+
+
+#  通过时间匹配
+#  Predicate 支持设置一个时间，在请求进行转发的时候，可以通过判断在这个时间之前或者之后进行转发。
+#  比如我们现在设置只有在2019年1月1日才会转发到我的网站，在这之前不进行转发，我就可以这样配置
+#spring:
+#  cloud:
+#    gateway:
+#      routes:
+#      - id: time_route
+#        uri: http://localhost:8081/
+#        predicates:
+#        - After=2018-01-20T06:06:06+08:00[Asia/Shanghai]
+#  Spring 是通过 ZonedDateTime 来对时间进行的对比，ZonedDateTime 是 Java 8 中日期时间功能里，
+#  用于表示带时区的日期与时间信息的类，ZonedDateTime 支持通过时区来设置时间，中国的时区是：Asia/Shanghai。
+
+#  After Route Predicate 是指在这个时间之后的请求都转发到目标地址。上面的示例是指，
+#  请求时间在 2018年1月20日6点6分6秒之后的所有请求都转发到地址http://localhost:8081/。+08:00是指时间和UTC时间相差八个小时，时间地区为Asia/Shanghai。
+
+#spring:
+#  cloud:
+#    gateway:
+#      routes:
+#      - id: before_route
+#        uri: http://localhost:8081
+#        predicates:
+#        - Before=2018-01-20T06:06:06+08:00[Asia/Shanghai]    #在设置时间之前去匹配
+#        - Between=2018-01-20T06:06:06+08:00[Asia/Shanghai],2019-01-20T06:06:06+08:00[Asia/Shanghai]  #在某一时间段匹配路由
+#        - Cookie=cookieName1,cookieNamevalue  #通过cookiename值和正则表达式去匹配。 使用 curl 测试，命令行输入: curl http://localhost:8080/ --Cookie "cookieName1=cookieNamevalue"
+#        - Header=X-Request-Id, \d+   #通过Header属性和一个正则表达式匹配 使用 curl 测试，命令行输入: curl http://localhost:8080/ --H "X-Request-Id:666"
+#        - Host=**.hostName.com   #通过host匹配 使用 curl 测试，命令行输入: curl http://localhost:8080/ --H "Host:www.hostName.com"
+#        - Method=GET #通过请求方式匹配 使用 curl  测试，命令行输入: curl -X POST http://localhost:8080/ 请求失败返回404
+#        - Path=/foo/{segment}  #通过请求路径匹配  使用 curl  测试，命令行输入: curl http://localhost:8080/foo/
+#        - Query=smile       #通过请求参数匹配     使用 curl  测试，命令行输入: curl http://localhost:8080?smile=x&id=1  只要请求汇总带有 smile 参数即会匹配路由，不带 smile 参数则不会匹配
+#        - Query=keep,pu.   #这样只要当请求中包含 keep 属性并且参数值是以 pu 开头的长度为三位的字符串才会进行匹配和路由  使用 curl  测试，命令行输入: curl http://localhost:8080?keep=pub
+#        - RemoteAddr=192.168.1.1/24  #通过ip地址匹配
+#Before Route Predicate 刚好相反，在某个时间之前的请求的请求都进行转发。我们把上面路由规则中的 After 改为 Before
+#就表示在这个时间之前可以进行路由，在这时间之后停止路由，修改完之后重启项目再次访问地址http://localhost:8080，页面会报 404 没有找到地址。
+#除过在时间之前或者之后外，Gateway 还支持限制路由请求在某一个时间段范围内，可以使用 Between Route Predicate 来实现
+#这样设置就意味着在这个时间段内可以匹配到此路由，超过这个时间段范围则不会进行匹配。通过时间匹配路由的功能很酷，可以用在限时抢购的一些场景中
+
+#组合使用  各种 Predicates 同时存在于同一个路由时，请求必须同时满足所有的条件才被这个路由匹配。
+spring:
+  cloud:
+    gateway:
+      routes:
+      - id: host_foo_path_headers_to_httpbin
+        uri: http://localhost:8081
+        predicates:
+          - Host=**.foo.org
+          - Path=/headers
+          - Method=GET
+          - Header=X-Request-Id, \d+
+          - Query=foo,ba.
+          - Query=baz
+          - Cookie=chocolate, ch.p
+          - After=2019-01-01T06:06:06+08:00[Asia/Shanghai]
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://user:password@peer1:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+
+
+
+
+
+
+
+
+
+
+
