@@ -486,8 +486,15 @@ docker logs containername
 cAdvisor+InfluxDB+Grafana
 # docker compose
 定义和管理多容器的工具，也是一种容器的编排工具，前身是pig
+##安装
+ 1 安装python-pip   安装命令：yum -y install epel-release
+                            yum -y install python-pip
+                            yum clean all
+                            pip install --upgrade pip 升级
+ 2安装docker-compose  pip install docker-compose
 #容器跨主机通信方案
-1 桥接宿主机网络
+1 桥接宿主机网络  使用自定义网桥连接跨主机容器。
+   Docker默认的网桥是docker0.它只会在本机连接所有的容器。容器的虚拟网卡在主机上看一般叫做veth*而docker0网桥吧所有这些网卡桥接在一起
 2 端口映射
 3 docker网络驱动
      overlay：docker原生overlay网络
@@ -499,7 +506,16 @@ cAdvisor+InfluxDB+Grafana
          OpenvSwitch：
      路由方案：
          Calico：
-
+5 使用 svendowideit/ambassador 容器 Ambassador容器也是Docker容器，它在内部提供了转发服务。
+     使用：拉取svendowideit/ambassador镜像  docker pull Ambassador
+       例：在服务端主机上创建一个服务端容器redis-server     docker run -itd --name redis-server redis
+          创建一个服务端Ambassador容器redis_ambassador,连接到服务端容器redis-server，并监听本地的6379端口。
+          docker run -itd --name redis_ambassador --link redis-server:redis -p 6379:6379  svendowideit/ambassador
+          在客户端主机上创建客户端 Ambassador容器，告诉它服务端物理主机的监听地址是tcp://x.x.x.x:6379,将本地收集到6379端口的流量转发到服务端物理主机
+          docker run -itd --name redis_ambassador --expose 6379 -e REDIS_PORT_6379_TCP=tcp://x.x.x.x:6379  svendowideit/ambassador
+          最后，创建一个客户端容器，进行测试，默认访问6379端口实际上访问的是服务端容器内的redis应用
+          docker run -it --link redis_ambassador:redis relateiq/redis-cli
+      启动 docker run -it
 
 
 
