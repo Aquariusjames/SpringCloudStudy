@@ -482,6 +482,18 @@ docker logs containername
 # docker图形化界面管理
 1 dockerui
 2 shipyard（推荐）默认账户admin密码shipyard
+##shipyard安装：
+ docker pull rethinkdb
+ docker pull microbox/etcd
+ docker pull shipyard/docker-proxy
+ docker pull swarm
+ docker pull dockerclub/shipyard
+ shipyard 一键部署脚本 shipyard-deploy 上传到主机
+ 赋予执行权限 chomd -x shipyard-deploy
+ 执行脚本 sh shipyard-deploy
+ 修改web访问端口  cat shipyard-deploy |grep 8080
+        sed -i 's/8080/80/g' shipyard-deploy
+
 # 容器监控
 cAdvisor+InfluxDB+Grafana
 # docker compose
