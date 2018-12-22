@@ -139,6 +139,11 @@ $ ls -l foobar
 载到 /cookbook，可以使用 -v "$PWD":/cookbook:ro 。
 #通过 docker inspect 命令来查看数据卷的挂载映射情况。
 docker inspect -f {{.Mounts}} 44d71a605b5b
+#改动容器文件并查看改动
+1 进入容器进行修改
+2 退出容器利用改动的容器新建镜像 docker commit -a "qi" -m "createmassage" containername imageName  containername:被改动的容器名称 imageName：新创建的镜像
+3 查看修改信息 docker diff containername
+
 #删除容器及它的卷
 docker rm -v [continaerID]|[containerName]
 #获取容器的ip
@@ -496,6 +501,27 @@ docker logs containername
 
 # 容器监控
 cAdvisor+InfluxDB+Grafana
+1安装镜像：
+    docker pull google/cadvisor
+    docker pull influxdb
+    docker pull grafana/grafana
+ 启动influxdb容器
+ docker run -d -p 8083:8083 -p 8086:8086 --expose 8090 --expose 8099 --name influxdb influxdb
+ 进入influxdb容器安装cadvisor数据库
+ docker exec -ti influxsrv bash
+ 执行 influx 命令
+ 创建数据库 用户
+ CREATE DATABASE cadvisor
+ > use cadvisor
+ > CREATE USER "root" WITH PASSWORD '123456' WITH ALL PRIVILEGES
+ > exit
+ 启动cadvisor容器
+    docker run --volume=/:/rootfs:ro --volume=/var/run:/var/run:rw --volume=/sys:/sys:ro --volume=/var/lib/docker/:/var/lib/docker:ro --p=8081:8081 --detach=true --link influxdb:influxdb --name=cadvisor google/cadvisor:latest -storage_driver=influxdb -storage_driver_db=cadvisor -storage_driver_host=influxdb:8086
+    通过主机IP+8081端口访问控制台
+ 启动grafana容器
+    docker run -d -p 3000:3000 -e INFLUXDB_HOST= influxdb  -e INFLUXDB_PORT=8086 -e INFLUXDB_NAME=cadvisor -e INFLUXDB_USER=root -e INFLUXDB_PASS=123456 --link influxdb:influxdb --name grafana grafana/grafana
+    通过主机IP+3000端口访问控制台，用户名密码为admin/admin
+ 配置grafana
 # docker compose
 定义和管理多容器的工具，也是一种容器的编排工具，前身是pig
 ##安装
