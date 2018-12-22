@@ -1,0 +1,9 @@
+version: '1'
+services:
+  javaApplication:
+    image: jdk8
+    ports:
+      - '8080:8080'
+      - '1443:443'
+    volumes:
+      - /application/:/application/

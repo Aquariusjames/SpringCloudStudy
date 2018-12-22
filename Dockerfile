@@ -51,6 +51,9 @@ WORKDIR $APPROOT
 RUN yum install git -y
 CMD ["git","-verion"]
 ENTRYPOINT ["git"]
+#通过VOLUME指令创建的挂载点，无法指定主机上对应的目录，它是自动生成的
+#容器中对/var/log目录的操作数据同步到主机中的目录中（它是自动生成的）
+VOLUME ["/var/log"]
 
 
 

@@ -1,0 +1,29 @@
+version: '2'
+services:
+  mariadb:
+    image: bitnami/mariadb:latest
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - /path/to/mariadb-persistence:/bitnami/mariadb
+    command: echo "hello world"
+  nginx:
+    image: nginx:latest
+    ports:
+      - '80:80'
+      - '1443:443'
+    volumes:
+      - /root/nginx/:/nginx/
+  tomcat:
+    image: tomcat8
+    depends_on:
+      - mariadb
+      - nginx
+    environment:
+      - USERNAME=root
+      - PASSWORD=123456
+    ports:
+      - '8080:8080'
+      - '8081:443'
+    volumes:
+      - /root/tomcat/:/tomcat/

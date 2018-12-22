@@ -523,7 +523,7 @@ cAdvisor+InfluxDB+Grafana
     docker run -d -p 3000:3000 -e INFLUXDB_HOST= influxdb  -e INFLUXDB_PORT=8086 -e INFLUXDB_NAME=cadvisor -e INFLUXDB_USER=root -e INFLUXDB_PASS=123456 --link influxdb:influxdb --name grafana grafana/grafana
     通过主机IP+3000端口访问控制台，用户名密码为admin/admin
  配置grafana
-# docker compose
+# docker-compose
 定义和管理多容器的工具，也是一种容器的编排工具，前身是pig
 ##安装
  1 安装python-pip   安装命令：yum -y install epel-release
@@ -531,6 +531,15 @@ cAdvisor+InfluxDB+Grafana
                             yum clean all
                             pip install --upgrade pip 升级
  2安装docker-compose  pip install docker-compose
+ docker-compose 使用docker-compose.yml文件构建服务
+ 在docker-compose.yml文件所在目录运行命令： docker-compose up -d 构建服务  docker-compose up --no-dep -d servername 这个命令会停止并删除servername服务然后创建并启动一个新的servername服务
+ 如果省略--no-dep 该指令会停止依赖此服务的其他服务并重新创建和重启
+ 如果服务源文件被更改 可以使用 docker-compose build servername     docker-compose up -d
+ docker-compose ps 查看docker-compose创建的服务的进程
+ 启动容器  docker-compose start containername
+ 停止容器  docker-compose stop containername
+ 删除容器  docker-compose rm containername
+ 查看日志  docker-compose logs containername
 #容器跨主机通信方案
 1 桥接宿主机网络  使用自定义网桥连接跨主机容器。
    Docker默认的网桥是docker0.它只会在本机连接所有的容器。容器的虚拟网卡在主机上看一般叫做veth*而docker0网桥吧所有这些网卡桥接在一起
