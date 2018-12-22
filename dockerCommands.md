@@ -140,6 +140,7 @@ $ ls -l foobar
 #通过 docker inspect 命令来查看数据卷的挂载映射情况。
 docker inspect -f {{.Mounts}} 44d71a605b5b
 #改动容器文件并查看改动
+容器文件的改动都会在容器的顶部创建改动的文件，执行或搜索时会从顶部一层一层的向下查找执行的文件
 1 进入容器进行修改
 2 退出容器利用改动的容器新建镜像 docker commit -a "qi" -m "createmassage" containername imageName  containername:被改动的容器名称 imageName：新创建的镜像
 3 查看修改信息 docker diff containername

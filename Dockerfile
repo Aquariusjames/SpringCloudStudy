@@ -28,3 +28,42 @@ ENTRYPOINT ["python","-version"]
  #如果这时docker run命令带了参数，这个参数会覆盖掉CMD指令的参数，并也会附加到ENTRYPOINT 指令的后面。
  #这样当容器启动后，会执行ENTRYPOINT 指令的参数部分。
  #可以看出，相对来说ENTRYPOINT指令优先级更高。
+#设置环境变量  多个不同的环境变量需要使用多个ENV指令来完成这样会导致创建多个层 \ 可以使多个环境变量值通过一个ENV指令完成设置
+ENV VERSION="1.0" \
+     APPROOT="/app"
+#相当于docker run 命令中的-e 设置环境变量
+
+#设置元数据，这些键值对被记录为镜像或容器的额外元数据。和docker run或docker create命令的--label选项在功能上一致
+LABEL base.name="Test" \
+       base.version="${VERSION}"
+#指定工作目录
+WORKDIR $APPROOT
+
+
+
+#创建git镜像
+FROM centos7
+MAINTAINER "QI"
+ENV GITTEST="git-centos7" \
+    VERION="0.1" \
+    APPROOT="/app"
+WORKDIR $APPROOT
+RUN yum install git -y
+CMD ["git","-verion"]
+ENTRYPOINT ["git"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
