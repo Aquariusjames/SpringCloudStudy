@@ -56,7 +56,29 @@ https://hub.docker.com/r/library
 systemctl start docker
 配置Docker开机自启动
 systemctl enable docker
+##执行docker version报错解决
+配置 DOCKER_HOST
+vim /etc/profile.d/docker.sh
+内容如下
+export DOCKER_HOST=tcp://localhost:2375
+应用
+source /etc/profile
+source /etc/bashrc
+配置启动文件
+vim /lib/systemd/system/docker.service
+将ExecStart=/usr/bin/dockerd
+修改为
+ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock -H tcp://0.0.0.0:7654
+2375 是管理端口
+7654 是备用端口
+重载配置和重启
+systemctl daemon-reload
+systemctl restart docker.service
+查看
+docker version
 
+yum remove docker
+yum remove docker-selinux
 # 设置主机网络 不设置有可能连接不到服务
  [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
 解决办法：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network
@@ -540,6 +562,7 @@ cAdvisor+InfluxDB+Grafana
  停止容器  docker-compose stop containername
  删除容器  docker-compose rm containername
  查看日志  docker-compose logs containername
+ 扩展服务  docker-compose scale containername=n
 #容器跨主机通信方案
 1 桥接宿主机网络  使用自定义网桥连接跨主机容器。
    Docker默认的网桥是docker0.它只会在本机连接所有的容器。容器的虚拟网卡在主机上看一般叫做veth*而docker0网桥吧所有这些网卡桥接在一起

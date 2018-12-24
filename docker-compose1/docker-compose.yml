@@ -1,9 +1,10 @@
-version: '1'
+version: '0.1'
 services:
   javaApplication:
-    image: jdk8
+    image: test:t1
     ports:
-      - '8080:8080'
+      - '8081:8081'
       - '1443:443'
     volumes:
-      - /application/:/application/
+      - /application/:/data/
+    command: echo "hello world"

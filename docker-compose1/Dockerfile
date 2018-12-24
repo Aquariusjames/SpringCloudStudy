@@ -1,7 +1,8 @@
 #java环境
-FROM jdk8
+FROM openjdk:8-alpine
 ADD application.jar /application/
 WORKDIR /application
-CMD ["java","-jar application.jar"]
-ENTRYPOINT ["java","-version"]
-VOLUME ["/application/log"]
+#CMD ["-jar","/application/application.jar"]
+ENTRYPOINT ["java","-jar","/application/application.jar","&"]
+#VOLUME ["/application"]
+EXPOSE 8080
