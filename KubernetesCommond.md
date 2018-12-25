@@ -1,7 +1,7 @@
 # kubernetes集群搭建
-192.168.84.34  master01
+192.168.84.32  master01
 192.168.84.33  node01
-192.168.84.32  node02
+192.168.84.34  node02
 https://www.kubernetes.org.cn/4948.html
 #设置阿里云 kubernets yum仓库镜像
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -57,10 +57,29 @@ vi /etc/fstab
 临时生效：sysctl -w vm.swappiness=0
 永久生效：
 echo "vm.swappiness = 0">> /etc/sysctl.conf     （尽量不使用交换分区，注意不是禁用）
+重启 reboot
 刷新SWAP
 可以执行命令刷新一次SWAP（将SWAP里的数据转储回内存，并清空SWAP里的数据）
 swapoff -a && swapon -a
 sysctl -p  (执行这个使其生效，不用重启)
+## 配置服务器的ntp时间钟（保证服务器之间的时间同步）
+yum install ntp ntpdate -y
+timedatectl status
+timedatectl list-timezones | grep Shanghai
+timedatectl set-timezone Asia/Hong_Kong
+timedatectl set-ntp yes
+date
+## 各节点主机名和IP加入/etc/hosts解析
+
+#127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.84.32    k8s-master01
+192.168.84.33    k8s-node01
+192.168.84.34    k8s-node02
+## master节点到各Node节点SSH免密登录。
+ssh-keygen
+ssh-copy-id 192.168.84.33
+ssh-copy-id 192.168.84.34
 # 设置Docker所需参数
 cat << EOF | tee /etc/sysctl.d/k8s.conf
 net.ipv4.ip_forward = 1
@@ -99,6 +118,114 @@ https://hub.docker.com/r/library
 systemctl start docker
 配置Docker开机自启动
 systemctl enable docker
+## 安装kubeadm工具
+yum  install -y  kubeadm
+## 安装完后，设置kubelet服务开机自启：必须设置Kubelet开机自启动，才能让k8s集群各组件在系统重启后自动运行。
+systemctl enable kubelet
+## 部署集群
+有了上面这些基础设置后，就可以开始用kubeadm init部署k8s集群了。
+在master上操作
+这一步之前确保swap已关闭。
+kubeadm init -h可查看帮助信息：
+root@k8s-master:~# kubeadm  init -h
+ ##查看init可用的参数，这里使用这两个参数：
+   --pod-network-cidr string ： 自定义Pod网络
+   --ignore-preflight-errors strings： 忽略一些错误
+开始初始化集群
+root@k8s-master:~# kubeadm init  --pod-network-cidr 192.168.0.0/16 --ignore-preflight-errors=all
+## 初始化完成，一台Master节点就部署好了，初始化过程中需要一定时间来pull镜像，也可以使用下面的命令提前下载好镜像：
+ kubeadm  config images pull
+## 根据提示执行：
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+# 在Node上操作
+## 在所有Node上使用kubeadm join加入集群：
+#确保swap已关闭
+#复制在master节点上记录下的那句话，以加入集群
+kubeadm join 192.168.84.33:6443 --token mwfr7m.57rmd56ghjyu0716 --discovery-token-ca-cert-hash sha256:8fbd33519b0203e9aa03cc882cb5489b5e6ad455f97581b1abf8ceb1dca8f622
+nit完后，节点已加入群集。
+最后，在master节点查看：
+kubectl get node
+去除master的taint，使用master也能被调度pod
+kubectl taint nodes k8s-master node-role.kubernetes.io/master-node/k8s-master untainted
+## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：
+kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+几分钟后，各Node全部Ready：
+#各节点已正常运行
+root@k8s-master:~# kubectl get node
+至此，所有组件全部运行：
+root@k8s-master:~# kubectl get pod -n kube-system
+测试集群
+配置kubectl的命令补全功能
+命令补全功能由安装包"bash-completion"提供，Ubuntu系统中默认已安装。
+
+当前shell生效：
+source <(kubectl completion bash)
+永久生效：
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+启动一个pod验证集群是否正常运行。
+#run一个deployment
+kubectl run -h
+Usage:
+  kubectl run NAME --image=image [--env="key=value"] [--port=port] [--replicas=replicas] [--dry-run=bool]
+[--overrides=inline-json] [--command] -- [COMMAND] [args...] [options]
+启动一个nginx
+
+kubectl run nginx --image=nginx:1.10 --port=80
+deployment.apps/nginx created
+#查看
+root@k8s-master:~# kubectl get pod -w -o wide
+NAME                     READY   STATUS              RESTARTS   AGE   IP       NODE         NOMINATED NODE
+nginx-787b58fd95-p9jwl   0/1     ContainerCreating   0          59s   <none>   k8s-node02   <none>
+nginx-787b58fd95-p9jwl   1/1   Running   0     70s   192.168.58.193   k8s-node02   <none>
+测试nginx正常访问
+root@k8s-master:~# curl  -I 192.168.58.193
+HTTP/1.1 200 OK
+Server: nginx/1.10.3
+Date: Sat, 29 Sep 2018 02:42:06 GMT
+Content-Type: text/html
+Content-Length: 612
+Last-Modified: Tue, 31 Jan 2017 15:01:11 GMT
+Connection: keep-alive
+ETag: "5890a6b7-264"
+Accept-Ranges: bytes
+把nginx暴露一个端口出来，以使集群之外能访问
+kubectl expose -h
+Usage:
+kubectl expose (-f FILENAME | TYPE NAME) [--port=port] [--protocol=TCP|UDP|SCTP] [--target-port=number-or-name]
+[--name=name] [--external-ip=external-ip-of-service] [--type=type] [options]
+root@k8s-master:~# kubectl expose deployment nginx --port=801 --target-port=80 --type=NodePort --name nginx-svc
+service/nginx-svc exposed
+root@k8s-master:~#
+查看服务：
+root@k8s-master:~# kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP         16h
+nginx-svc    NodePort    10.100.84.207   <none>        801:30864/TCP   25s
+现在可以访问任意Node的30864端口访问到nginx服务：
+
+root@k8s-node01:~# curl 10.3.1.21:30864
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Welcome to nginx!</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+如果发现哪个某个Node端口无法访问，则设置默认FORWARD规则为ACCEPT
+
+ iptables -P FORWARD ACCEPT
+
+
+
 
 ## 创建安装目录
 mkdir /k8s/etcd/{bin,cfg,ssl} -p
@@ -248,7 +375,7 @@ cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=kube
 ## ssh-key认证
 ssh-keygen
 ssh-copy-id 192.168.84.33
-ssh-copy-id 192.168.84.32
+ssh-copy-id 192.168.84.34
 # 部署ETCD
 ## 解压安装文件
 tar -xvf etcd-v3.3.10-linux-amd64.tar.gz
