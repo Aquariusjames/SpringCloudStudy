@@ -128,7 +128,7 @@ https://hub.docker.com/r/library
 systemctl start docker
 配置Docker开机自启动
 systemctl enable docker
-## 安装kubeadm，kubelet，kubectl
+## 安装 kubeadm，kubelet，kubectl
 在各节点安装kubeadm，kubelet，kubectl
 安装完后，设置kubelet服务开机自启：必须设置Kubelet开机自启动，才能让k8s集群各组件在系统重启后自动运行。
 yum install -y kubelet kubeadm kubectl
@@ -166,8 +166,10 @@ kubeadm join
 去除master的taint，使用master也能被调度pod
 kubectl taint nodes k8s-master node-role.kubernetes.io/master-node/k8s-master untainted
 
-## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：calico或flannel
+## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：calico 或flannel
 ## master上部署flannel
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
 wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
 wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 kubectl apply -f kube-fannel-rbac.yml
@@ -201,9 +203,9 @@ kubectl run nginx --image=nginx:1.10 --port=80
 deployment.apps/nginx created
 #查看
 root@k8s-master:~# kubectl get pod -w -o wide
-NAME                     READY   STATUS              RESTARTS   AGE   IP       NODE         NOMINATED NODE
-nginx-787b58fd95-p9jwl   0/1     ContainerCreating   0          59s   <none>   k8s-node02   <none>
-nginx-787b58fd95-p9jwl   1/1   Running   0     70s   192.168.58.193   k8s-node02   <none>
+NAME                     READY   STATUS              RESTARTS   AGE   IP                NODE         NOMINATED   NODE
+nginx-787b58fd95-p9jwl   0/1     ContainerCreating      0       59s   <none>            k8s-node02      <none>
+nginx-787b58fd95-p9jwl   1/1        Running             0       70s   192.168.58.193    k8s-node02      <none>
 测试nginx正常访问
 root@k8s-master:~# curl  -I 192.168.58.193
 HTTP/1.1 200 OK
@@ -215,7 +217,9 @@ Last-Modified: Tue, 31 Jan 2017 15:01:11 GMT
 Connection: keep-alive
 ETag: "5890a6b7-264"
 Accept-Ranges: bytes
-把nginx暴露一个端口出来，以使集群之外能访问
+## 创建一个service
+kubectl expose deployment nginx --name=nginx-service --port=80 --target-port=80 --protocol=TCP --type=NodePort
+kubectl expose  nginx --port=80 --type=LoadBalancer
 kubectl expose -h
 Usage:
 kubectl expose (-f FILENAME | TYPE NAME) [--port=port] [--protocol=TCP|UDP|SCTP] [--target-port=number-or-name]
