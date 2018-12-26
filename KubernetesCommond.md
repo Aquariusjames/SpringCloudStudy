@@ -165,8 +165,17 @@ kubeadm join
 开启端口代理：kubectl proxy --port=8080 &
 去除master的taint，使用master也能被调度pod
 kubectl taint nodes k8s-master node-role.kubernetes.io/master-node/k8s-master untainted
-## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：
-kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+
+## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：calico或flannel
+## master上部署flannel
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f kube-fannel-rbac.yml
+kubectl apply -f kube-flannel.yml
+## master上部署calico
+kubectl apply -f calico.yaml
+kubectl apply -f rbac.yaml
+
 几分钟后，各Node全部Ready：
 #各节点已正常运行
 root@k8s-master:~# kubectl get node
