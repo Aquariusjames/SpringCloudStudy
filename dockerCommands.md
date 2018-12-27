@@ -76,9 +76,14 @@ systemctl daemon-reload
 systemctl restart docker.service
 查看
 docker version
-
-yum remove docker
-yum remove docker-selinux
+## 卸载docker
+1.查询安装过的包
+yum list installed | grep docker
+docker-engine.x86_64                 17.03.0.ce-1.el7.centos         @dockerrepo
+2.删除安装的软件包
+yum -y remove docker-engine.x86_64
+3.删除镜像/容器等
+rm -rf /var/lib/docker
 # 设置主机网络 不设置有可能连接不到服务
  [创建容器的时候报错WARNING: IPv4 forwarding is disabled. Networking will not work.]
 解决办法：vim  /usr/lib/sysctl.d/00-system.conf 添加如下代码：net.ipv4.ip_forward=1 重启network服务 systemctl restart network

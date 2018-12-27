@@ -277,10 +277,84 @@ node1节点的IP是192.168.119.156，再加上dashboard的service映射的端口
 ## 查看
 kubectl get services --all-namespaces
 
+token实例:
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbi10b2tlbi1zNWRxNiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijg4NWI5ZWI1LTA5ODMtMTFlOS05ZWZlLTAwMGMyOTM5ODVmMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiJ9.DV7ny0lAGlVlqvOK-OXGZYK-JL4l9rfSCmR9mesNQatdBNSXKQf0rpGXbbNwG5R5D7T6ZLA0Id0CQNrhtxHDQ7smYqzi33wWjXUleiTkPg6ybXSpvcjZuPHAu910CqV5CxoNudKgj7vXwuj8Oy-oO3PIW2pWcn3LeiB3O7qDkNjYZaxHuQtyfQLFgPSGZsQGv73YOxghRZSoFF_cvIY_r5MKNecTSXhc8yfd_M_GMs5ZAdZwGGo7yyUDGSxIpmdTQNNTKMUmhCpSaIgeHFKKiEzmNyvkmzT1TayFRPCUcFE99Fq9ywEqgsfmGSk_QWbZLm0A3QEX5RSRgJePSQV5Hg
+
+# minikube单机版kubernetes实验环境
+1 yum install -y kubectl
+2 安装最新版minikube curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+安装指定版本可到https://github.com/kubernetes/minikube/releases下载对应版本。
+例如：以下为安装v0.28.2版本
+curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.2/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
+3 安装golang 和 Docker
+4 安装 virtualbox
+cat <<EOF > /etc/yum.repos.d/virtualbox.repo
+[virtualbox]
+name=Oracle Linux / RHEL / CentOS-$releasever / $basearch - VirtualBox
+baseurl=http://download.virtualbox.org/virtualbox/rpm/el/$releasever/$basearch
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://www.virtualbox.org/download/oracle_vbox.asc
+EOF
+    更新yum缓存
+    yum clean all
+    yum makecache
+    yum install VirtualBox-6.0
+    yum -y install kernel-devel-3.10.0-957.1.3.el7.x86_64
+5 设置Docker所需参数
+cat << EOF | tee /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl -p /etc/sysctl.d/k8s.conf
+##执行上边命令报错解决：
+modprobe br_netfilter
+ls /proc/sys/net/bridge
+6 关闭Swap
+swapoff -a && sysctl -w vm.swappiness=0
+vi /etc/fstab
+#/dev/mapper/centos-swap swap                    swap    defaults        0 0
+临时生效：sysctl -w vm.swappiness=0
+永久生效：
+echo "vm.swappiness = 0">> /etc/sysctl.conf     （尽量不使用交换分区，注意不是禁用）
+重启 reboot
+刷新SWAP
+可以执行命令刷新一次SWAP（将SWAP里的数据转储回内存，并清空SWAP里的数据）
+swapoff -a && swapon -a
+sysctl -p  (执行这个使其生效，不用重启)
+7 启动 minikube start --vm-driver=none
+8 安装指定版本的kubernetes集群
+查阅版本
+minikube get-k8s-versions
+选择版本启动
+minikube start --kubernetes-version v1.7.3 --vm-driver=none
+8 打开Kubernetes控制台  minikube dashboard
+查看状态minikube status
+$ minikube status
+minikube stop 命令可以用来停止集群。 该命令会关闭 minikube 虚拟机，但将保留所有集群状态和数据。 再次启动集群将恢复到之前的状态。
+minikube delete 命令可以用来删除集群。 该命令将关闭并删除 minikube 虚拟机。没有数据或状态会被保存下来。
+部署组件
+root@ubuntu:~# kubectl get all --namespace=kube-system
+dashboard
+通过访问ip:port，例如：http://172.16.94.139:30000/，可以访问k8s的dashboard控制台。
+
+
+
 # 二进制文件安装
 下载二进制文件安装包
 下载地址 https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.13.md#v1131
 安装说明 https://www.kubernetes.org.cn/4963.html
  进入k8s github地址 进入release 点击CHANGELOG-*选择下载组件
-token实例:
-eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbi10b2tlbi1zNWRxNiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijg4NWI5ZWI1LTA5ODMtMTFlOS05ZWZlLTAwMGMyOTM5ODVmMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiJ9.DV7ny0lAGlVlqvOK-OXGZYK-JL4l9rfSCmR9mesNQatdBNSXKQf0rpGXbbNwG5R5D7T6ZLA0Id0CQNrhtxHDQ7smYqzi33wWjXUleiTkPg6ybXSpvcjZuPHAu910CqV5CxoNudKgj7vXwuj8Oy-oO3PIW2pWcn3LeiB3O7qDkNjYZaxHuQtyfQLFgPSGZsQGv73YOxghRZSoFF_cvIY_r5MKNecTSXhc8yfd_M_GMs5ZAdZwGGo7yyUDGSxIpmdTQNNTKMUmhCpSaIgeHFKKiEzmNyvkmzT1TayFRPCUcFE99Fq9ywEqgsfmGSk_QWbZLm0A3QEX5RSRgJePSQV5Hg
+
+
+
+
+
+
+
+
+
+
+
