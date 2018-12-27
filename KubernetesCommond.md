@@ -342,13 +342,13 @@ echo "vm.swappiness = 0">> /etc/sysctl.conf     （尽量不使用交换分区
 可以执行命令刷新一次SWAP（将SWAP里的数据转储回内存，并清空SWAP里的数据）
 swapoff -a && swapon -a
 sysctl -p  (执行这个使其生效，不用重启)
-7 启动 minikube start --registry-mirror=https://registry.docker-cn.com
+7 启动 minikube start --vm-driver=none
 8 安装指定版本的kubernetes集群
 查阅版本
 minikube get-k8s-versions
 设置vmware虚拟机虚拟化引擎  虚拟机设置--》内核--》虚拟化引擎设置选择intel vt-x/ept或amd-v/rv
 选择版本启动
-minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.1
+minikube start --kubernetes-version v1.12.1 --vm-driver=none
 8 打开Kubernetes控制台  minikube dashboard
 查看状态minikube status
 $ minikube status
