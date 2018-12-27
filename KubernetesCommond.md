@@ -280,13 +280,28 @@ kubectl get services --all-namespaces
 token实例:
 eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbi10b2tlbi1zNWRxNiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijg4NWI5ZWI1LTA5ODMtMTFlOS05ZWZlLTAwMGMyOTM5ODVmMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiJ9.DV7ny0lAGlVlqvOK-OXGZYK-JL4l9rfSCmR9mesNQatdBNSXKQf0rpGXbbNwG5R5D7T6ZLA0Id0CQNrhtxHDQ7smYqzi33wWjXUleiTkPg6ybXSpvcjZuPHAu910CqV5CxoNudKgj7vXwuj8Oy-oO3PIW2pWcn3LeiB3O7qDkNjYZaxHuQtyfQLFgPSGZsQGv73YOxghRZSoFF_cvIY_r5MKNecTSXhc8yfd_M_GMs5ZAdZwGGo7yyUDGSxIpmdTQNNTKMUmhCpSaIgeHFKKiEzmNyvkmzT1TayFRPCUcFE99Fq9ywEqgsfmGSk_QWbZLm0A3QEX5RSRgJePSQV5Hg
 
-# minikube单机版kubernetes实验环境
+# minikube 单机版kubernetes实验环境
+设置yum源
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
 1 yum install -y kubectl
 2 安装最新版minikube curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 安装指定版本可到https://github.com/kubernetes/minikube/releases下载对应版本。
 例如：以下为安装v0.28.2版本
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.2/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 3 安装golang 和 Docker
+境变量配置文件  /etc/profile
+ GO PATH
+export PATH=$PATH:/usr/local/go/bin
+ GO GOPATH
+export GOPATH=/home/golang
 4 安装 virtualbox
 cat <<EOF > /etc/yum.repos.d/virtualbox.repo
 [virtualbox]
@@ -302,6 +317,9 @@ EOF
     yum makecache
     yum install VirtualBox-6.0
     yum -y install kernel-devel-3.10.0-957.1.3.el7.x86_64
+    yum install dkms kernel-devel kernel-headers
+    yum install gcc
+
 5 设置Docker所需参数
 cat << EOF | tee /etc/sysctl.d/k8s.conf
 net.ipv4.ip_forward = 1
@@ -324,12 +342,13 @@ echo "vm.swappiness = 0">> /etc/sysctl.conf     （尽量不使用交换分区
 可以执行命令刷新一次SWAP（将SWAP里的数据转储回内存，并清空SWAP里的数据）
 swapoff -a && swapon -a
 sysctl -p  (执行这个使其生效，不用重启)
-7 启动 minikube start --vm-driver=none
+7 启动 minikube start --registry-mirror=https://registry.docker-cn.com
 8 安装指定版本的kubernetes集群
 查阅版本
 minikube get-k8s-versions
+设置vmware虚拟机虚拟化引擎  虚拟机设置--》内核--》虚拟化引擎设置选择intel vt-x/ept或amd-v/rv
 选择版本启动
-minikube start --kubernetes-version v1.7.3 --vm-driver=none
+minikube start --registry-mirror=https://registry.docker-cn.com --kubernetes-version v1.13.1
 8 打开Kubernetes控制台  minikube dashboard
 查看状态minikube status
 $ minikube status
