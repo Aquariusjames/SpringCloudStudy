@@ -252,11 +252,35 @@ root@k8s-node01:~# curl 10.3.1.21:30864
 如果发现哪个某个Node端口无法访问，则设置默认FORWARD规则为ACCEPT
  iptables -P FORWARD ACCEPT
 
-
+## 安装 kubernetes-dashboard
+kubectl apply -f kubernetes-dashboard.yaml 默认的镜像国内网下载不了修改下
+## 删除 kubernetes-dashboard
+kubectl delete -f kubernetes-dashboard.yaml
+## 想要访问dashboard服务，就要有访问权限，这里需要先设置一个dashboard服务的权限和绑定关系，执行以下命令创建对应的资源文件dashboard-svc-account.yaml
+执行命令创建ServiceAccount和ClusterRoleBinding：
+kubectl create -f ~/dashboard-svc-account.yaml
+找出secret，这个secret中有token，该token是登录dashboard时用到的：
+kubectl -n kube-system get secret | grep kubernetes-dashboard-admin
+执行的结果例：kubernetes-dashboard-admin-token-wc5tf就是dashboard的secret
+查看kubernetes-dashboard-admin-token-wc5tf的详情，里面有对应的token信息：
+kubectl describe -n kube-system secret/kubernetes-dashboard-admin-token-wc5tf |grep token:
+token:右侧的"eyJhbGciOiJSU…"这一长串字符串就是token，这是个永久生效的token，请保存下来：
+接下来需要知道dashboard对应的pod是部署在哪个node上的，执行命令：
+kubectl get pods -n kube-system | grep kubernetes-dashboard-
+在控制台输出如下：
+[root@localhost ~]# kubectl get pods -n kube-system > | grep kubernetes-dashboard-
+kubernetes-dashboard-77fd78f978-84krd           1/1     Running   0          54m
+可见pod的名字是kubernetes-dashboard-77fd78f978-84krd，接下来可以根据名字查看pod的详情；
+执行以下命令，用来查看名为"kubernetes-dashboard-77fd78f978-84krd"的pod的详情：
+kubectl describe -n kube-system pod/kubernetes-dashboard-77fd78f978-84krd
+node1节点的IP是192.168.119.156，再加上dashboard的service映射的端口32073，因此在浏览器上访问的dashboard地址为：https://192.168.84.33:32073/#!/login
+## 查看
+kubectl get services --all-namespaces
 
 # 二进制文件安装
 下载二进制文件安装包
 下载地址 https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.13.md#v1131
 安装说明 https://www.kubernetes.org.cn/4963.html
  进入k8s github地址 进入release 点击CHANGELOG-*选择下载组件
-
+token实例:
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbi10b2tlbi1zNWRxNiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijg4NWI5ZWI1LTA5ODMtMTFlOS05ZWZlLTAwMGMyOTM5ODVmMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiJ9.DV7ny0lAGlVlqvOK-OXGZYK-JL4l9rfSCmR9mesNQatdBNSXKQf0rpGXbbNwG5R5D7T6ZLA0Id0CQNrhtxHDQ7smYqzi33wWjXUleiTkPg6ybXSpvcjZuPHAu910CqV5CxoNudKgj7vXwuj8Oy-oO3PIW2pWcn3LeiB3O7qDkNjYZaxHuQtyfQLFgPSGZsQGv73YOxghRZSoFF_cvIY_r5MKNecTSXhc8yfd_M_GMs5ZAdZwGGo7yyUDGSxIpmdTQNNTKMUmhCpSaIgeHFKKiEzmNyvkmzT1TayFRPCUcFE99Fq9ywEqgsfmGSk_QWbZLm0A3QEX5RSRgJePSQV5Hg
