@@ -307,6 +307,11 @@ Docker配置文件/etc/sysconfig/docker
 内容改为如下 OPTIONS=’–selinux-enabled=false --insecure-registry gcr.io’
 Kubernetes apiservce配置文件/etc/kubernetes/apiserver
 去掉–admission-control中的ServiceAccount
+vi /etc/kubernetes/kubelet
+# pod infrastructure container
+#KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=registry.access.redhat.com/rhel7/pod-infrastructure:latest"
+#修改为:
+KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image=docker.io/kubernetes/pause:latest"
 缺少rhsm
 wget http://mirror.centos.org/centos/7/os/x86_64/Packages/python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm
 chmod +x python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm
@@ -357,8 +362,6 @@ docker ps | grep mysql
 vim mysql-svc.yaml
 1
 配置信息
-
-
 apiVersion: v1
 kind: Service
 metadata:
