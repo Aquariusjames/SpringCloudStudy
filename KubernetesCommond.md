@@ -280,8 +280,17 @@ kubectl get services --all-namespaces
 token实例:
 eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbi10b2tlbi1zNWRxNiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6Ijg4NWI5ZWI1LTA5ODMtMTFlOS05ZWZlLTAwMGMyOTM5ODVmMSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZC1hZG1pbiJ9.DV7ny0lAGlVlqvOK-OXGZYK-JL4l9rfSCmR9mesNQatdBNSXKQf0rpGXbbNwG5R5D7T6ZLA0Id0CQNrhtxHDQ7smYqzi33wWjXUleiTkPg6ybXSpvcjZuPHAu910CqV5CxoNudKgj7vXwuj8Oy-oO3PIW2pWcn3LeiB3O7qDkNjYZaxHuQtyfQLFgPSGZsQGv73YOxghRZSoFF_cvIY_r5MKNecTSXhc8yfd_M_GMs5ZAdZwGGo7yyUDGSxIpmdTQNNTKMUmhCpSaIgeHFKKiEzmNyvkmzT1TayFRPCUcFE99Fq9ywEqgsfmGSk_QWbZLm0A3QEX5RSRgJePSQV5Hg
 
-# minikube 单机版kubernetes实验环境
-设置yum源
+# k8s单点安装
+1关闭centos自带的防火墙
+ systemctl disable firewalld
+ systemctl stop firewalld
+yum update
+#step 1: 安装必要的一些系统工具
+ yum install -y yum-utils device-mapper-persistent-data lvm2
+#Step 2: 添加软件源信息
+ yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+#设置阿里云 kubernets yum仓库镜像
+修改yum安装源
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -291,75 +300,81 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
 EOF
-1 yum install -y kubectl
-2 安装最新版minikube curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-安装指定版本可到https://github.com/kubernetes/minikube/releases下载对应版本。
-例如：以下为安装v0.28.2版本
-curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.28.2/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
-3 安装golang 和 Docker
-境变量配置文件  /etc/profile
- GO PATH
-export PATH=$PATH:/usr/local/go/bin
- GO GOPATH
-export GOPATH=/home/golang
-4 安装 virtualbox
-cat <<EOF > /etc/yum.repos.d/virtualbox.repo
-[virtualbox]
-name=Oracle Linux / RHEL / CentOS-$releasever / $basearch - VirtualBox
-baseurl=http://download.virtualbox.org/virtualbox/rpm/el/$releasever/$basearch
-enabled=1
-gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://www.virtualbox.org/download/oracle_vbox.asc
-EOF
-    更新yum缓存
-    yum clean all
-    yum makecache
-    yum install VirtualBox-6.0
-    yum -y install kernel-devel-3.10.0-957.1.3.el7.x86_64
-    yum install dkms kernel-devel kernel-headers
-    yum install gcc
+2.安装etcd和kubernetes软件（会自动安装docker）
+yum install -y etcd kubernetes
+修改配置文件
+Docker配置文件/etc/sysconfig/docker
+内容改为如下 OPTIONS=’–selinux-enabled=false --insecure-registry gcr.io’
+Kubernetes apiservce配置文件/etc/kubernetes/apiserver
+去掉–admission-control中的ServiceAccount
+缺少rhsm
+wget http://mirror.centos.org/centos/7/os/x86_64/Packages/python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm
+chmod +x python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm
+- 运行
+rpm2cpio python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm | cpio -iv --to-stdout /etc/rhsm/ca/redhat-uep.pem | tee /etc/rhsm/ca/redhat-uep.pem
+手动下载使用使用docker pull 拉取镜像
+==> docker pull registry.access.redhat.com/rhel7/pod-infrastructure:latest
+创建pod
+vim mysql-rc.yaml
+1
+贴入如下内容
 
-5 设置Docker所需参数
-cat << EOF | tee /etc/sysctl.d/k8s.conf
-net.ipv4.ip_forward = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-sysctl -p /etc/sysctl.d/k8s.conf
-##执行上边命令报错解决：
-modprobe br_netfilter
-ls /proc/sys/net/bridge
-6 关闭Swap
-swapoff -a && sysctl -w vm.swappiness=0
-vi /etc/fstab
-#/dev/mapper/centos-swap swap                    swap    defaults        0 0
-临时生效：sysctl -w vm.swappiness=0
-永久生效：
-echo "vm.swappiness = 0">> /etc/sysctl.conf     （尽量不使用交换分区，注意不是禁用）
-重启 reboot
-刷新SWAP
-可以执行命令刷新一次SWAP（将SWAP里的数据转储回内存，并清空SWAP里的数据）
-swapoff -a && swapon -a
-sysctl -p  (执行这个使其生效，不用重启)
-7 启动 minikube start --vm-driver=none
-8 安装指定版本的kubernetes集群
-查阅版本
-minikube get-k8s-versions
-设置vmware虚拟机虚拟化引擎  虚拟机设置--》内核--》虚拟化引擎设置选择intel vt-x/ept或amd-v/rv
-选择版本启动
-minikube start --kubernetes-version v1.12.1 --vm-driver=none
-8 打开Kubernetes控制台  minikube dashboard
-查看状态minikube status
-$ minikube status
-minikube stop 命令可以用来停止集群。 该命令会关闭 minikube 虚拟机，但将保留所有集群状态和数据。 再次启动集群将恢复到之前的状态。
-minikube delete 命令可以用来删除集群。 该命令将关闭并删除 minikube 虚拟机。没有数据或状态会被保存下来。
-部署组件
-root@ubuntu:~# kubectl get all --namespace=kube-system
-dashboard
-通过访问ip:port，例如：http://172.16.94.139:30000/，可以访问k8s的dashboard控制台。
+apiVersion: v1
+kind: ReplicationController
+metadata:
+    name: mysql
+spec:
+    replicas: 1
+    selector:
+        app: mysql
+    template:
+        metadata:
+            labels:
+                app: mysql
+        spec:
+            containers:
+                - name: mysql
+                  image: mysql
+                  ports:
+                      - containerPort: 3306
+                  env:
+                      - name: MYSQL_ROOT_PASSWORD
+                        value: "root"
+MYSQL_ROOT_PASSWORD 表示root配置密码是root
+创建pod
+kubectl create -f mysql-rc.yaml
+kubectl get rc
+kubectl get pods
+kubectl describe pod mysql 查看服务状态
+删除pod 并重新创建
+kubectl delete -f mysql-rc.yaml
+kubectl create -f mysql-rc.yaml
+docker ps查看运行的容器：
+docker ps | grep mysql
+创建服务
+创建service文件
+
+vim mysql-svc.yaml
+1
+配置信息
 
 
+apiVersion: v1
+kind: Service
+metadata:
+    name: mysql
+spec:
+    ports:
+        - port: 3306
+    selector:
+        app: mysql
+创建service
+kubectl create -f mysql-svc.yaml
+kubectl get svc
+即可看到运行的进程
+docker ps| grep mysql
+或者
+systemctl status etcd.service
 
 # 二进制文件安装
 下载二进制文件安装包
