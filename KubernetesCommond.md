@@ -86,6 +86,7 @@ date
 192.168.84.32    k8s-master01
 192.168.84.33    k8s-node01
 192.168.84.34    k8s-node02
+127.0.0.1      k8s-master01
 ## master节点到各Node节点SSH免密登录。
 ssh-keygen
 ssh-copy-id 192.168.84.33
