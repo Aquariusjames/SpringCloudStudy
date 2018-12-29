@@ -14,12 +14,10 @@ Docker配置文件/etc/sysconfig/docker
 内容改为如下 OPTIONS=’–selinux-enabled=false --insecure-registry gcr.io’
 
 vim /etc/sysconfig/docker
-1
 Kubernetes apiservce配置文件/etc/kubernetes/apiserver
 去掉–admission-control中的ServiceAccount
 
 vim /etc/kubernetes/apiserver
-1
 启动服务
 
 systemctl start etcd.service

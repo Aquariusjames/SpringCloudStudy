@@ -3,6 +3,8 @@
 192.168.84.33  node01
 192.168.84.34  node02
 https://www.kubernetes.org.cn/4948.html
+yum install net-tools 安装 netstat
+查看 netstat -ntlp 端口
 #设置阿里云 kubernets yum仓库镜像
 修改yum安装源
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -269,8 +271,8 @@ token:右侧的"eyJhbGciOiJSU…"这一长串字符串就是token，这是个永
 接下来需要知道dashboard对应的pod是部署在哪个node上的，执行命令：
 kubectl get pods -n kube-system | grep kubernetes-dashboard-
 在控制台输出如下：
-[root@localhost ~]# kubectl get pods -n kube-system > | grep kubernetes-dashboard-
-kubernetes-dashboard-77fd78f978-84krd           1/1     Running   0          54m
+[root@localhost ~]# kubectl get pods -n kube-system > | grep kubernetes-dashboard-kubernetes-dashboard-77fd78f978-84krd
+          1/1     Running   0          54m
 可见pod的名字是kubernetes-dashboard-77fd78f978-84krd，接下来可以根据名字查看pod的详情；
 执行以下命令，用来查看名为"kubernetes-dashboard-77fd78f978-84krd"的pod的详情：
 kubectl describe -n kube-system pod/kubernetes-dashboard-77fd78f978-84krd
@@ -320,9 +322,17 @@ chmod +x python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm
 rpm2cpio python-rhsm-certificates-1.19.10-1.el7_4.x86_64.rpm | cpio -iv --to-stdout /etc/rhsm/ca/redhat-uep.pem | tee /etc/rhsm/ca/redhat-uep.pem
 手动下载使用使用docker pull 拉取镜像
 ==> docker pull registry.access.redhat.com/rhel7/pod-infrastructure:latest
+
+启动服务
+systemctl start etcd.service
+systemctl start docker
+systemctl start kube-apiserver.service
+systemctl start kube-controller-manager.service
+systemctl start kube-scheduler.service
+systemctl start kubelet.service
+systemctl start kube-proxy.service
 创建pod
 vim mysql-rc.yaml
-1
 贴入如下内容
 
 apiVersion: v1
@@ -361,7 +371,6 @@ docker ps | grep mysql
 创建service文件
 
 vim mysql-svc.yaml
-1
 配置信息
 apiVersion: v1
 kind: Service
