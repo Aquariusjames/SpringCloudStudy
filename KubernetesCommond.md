@@ -3,7 +3,8 @@
 192.168.84.33  node01
 192.168.84.34  node02
 https://www.kubernetes.org.cn/4948.html
-yum install net-tools 安装 netstat
+ 安装 netstat
+ yum install net-tools
 查看 netstat -ntlp 端口
 #设置阿里云 kubernets yum仓库镜像
 修改yum安装源
@@ -22,6 +23,7 @@ https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm
 执行setenforce 0
 #selinux配置设置Set SELinux in permissive mode
 sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+SELINUX=disabled 
 #centos7设置k8s.conf
 cat <<EOF >  /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -394,7 +396,35 @@ systemctl status etcd.service
 下载地址 https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.13.md#v1131
 安装说明 https://www.kubernetes.org.cn/4963.html
  进入k8s github地址 进入release 点击CHANGELOG-*选择下载组件
-
+etcd集群开机启动
+1. 使用yum安装etcd
+yum -y install etcd.86_64
+配置hosts文件 
+192.168.2.46   etcd01
+192.168.2.47   etcd02
+192.168.2.48   etcd03
+设置 /etc/selinux/conf文件 SELINUX=disabled
+etc/profile    加入 export ETCDCTL_API=3 系统默认版本是2改成3
+当修改完配置重启的时候需要把  /var/lib/etcd 中的文件清空在启动否则不生效或启动失败
+2. 每个节点更新配置文件 
+tee /etc/etcd/etcd.conf <<-'EOF'
+ETCD_NAME=etcd03 改成相应接点的配置名
+ETCD_DATA_DIR="/var/lib/etcd/default.etcd"  默认的就行
+ETCD_LISTEN_PEER_URLS="http://192.168.2.46:2380" 改成相应节点的ip下同
+ETCD_LISTEN_CLIENT_URLS="http://192.168.2.46:2379,http://127.0.0.1:2379"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://192.168.2.46:2380"
+ETCD_ADVERTISE_CLIENT_URLS="http://192.168.2.46:2379"
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster1"
+ETCD_INITIAL_CLUSTER="etcd01=http://192.168.2.44:2380,etcd02=http://192.168.2.45:2380,etcd03=http://192.168.2.46:2380"
+EOF
+3. 更新启动
+systemctl daemon-reload
+systemctl start etcd
+systemctl enable etcd
+4. 校验状态
+etcdctl member list 
+etcdctl cluster-health
 
 
 
