@@ -2,7 +2,8 @@
 192.168.84.32  master01
 192.168.84.33  node01
 192.168.84.34  node02
-https://www.kubernetes.org.cn/4948.html
+## 环境配置设置
+
  安装 netstat
  yum install net-tools
 查看 netstat -ntlp 端口
@@ -91,7 +92,7 @@ date
 192.168.84.33    k8s-node01
 192.168.84.34    k8s-node02
 127.0.0.1      k8s-master01
-## master节点到各Node节点SSH免密登录。
+## master节点到各Node节点SSH免密登录。（可选）
 ssh-keygen
 ssh-copy-id 192.168.84.33
 ssh-copy-id 192.168.84.34
@@ -116,7 +117,7 @@ yum install docker-ce -y
 systemctl start docker && systemctl enable docker
 ## Step 3: 更新并安装Docker-CE
  yum makecache fast
- yum -y install docker-ce
+ yum install -y --setopt=obsoletes=0 docker-ce-18.06.1.ce-3.el7
 ## Step 4: 开启Docker服务
 service docker start
 ## 配置阿里云加速器我的阿里云加速器
@@ -164,8 +165,10 @@ kubeadm init \
 kubeadm join
 ## 在主机上执行 kubectl get nodes 查看node信息出错
 解决 ： the server doesn't have a resource type "nodes"
-        cp /etc/kubernetes/admin.conf ~/.kube/config
-需要开启api server 代理端口：
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  需要开启api server 代理端口：
 查看端口是否代理：curl localhost:8080/api
 开启端口代理：kubectl proxy --port=8080 &
 去除master的taint，使用master也能被调度pod
