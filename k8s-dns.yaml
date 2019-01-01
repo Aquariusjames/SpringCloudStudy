@@ -82,7 +82,7 @@ spec:
   selector:
     k8s-app: coredns
   # Replace with your cluster DNS IP
-  clusterIP: 10.254.0.10
+  clusterIP: 10.96.0.1
   ports:
     - name: dns
       port: 53

@@ -8,7 +8,7 @@ data:
   # The location of your etcd cluster.  This uses the Service clusterIP
   # defined below.
   # 192.168.182.128是我虚拟机的地址 也就是Kubernetes master节点所在机器的地址，下面配置中用到的这个地址同理
-  etcd_endpoints: "http://192.168.84.32:2379"
+  etcd_endpoints: "http://192.168.89.111:2379"
 
   # True enables BGP networking, false tells Calico to enforce
   # policy only, using native networking.
@@ -19,14 +19,14 @@ data:
     {
         "name": "k8s-pod-network",
         "type": "calico",
-        "etcd_endpoints": "http://192.168.84.32:2379",
+        "etcd_endpoints": "http://192.168.89.111:2379",
         "log_level": "info",
         "ipam": {
             "type": "calico-ipam"
         },
         "policy": {
             "type": "k8s",
-             "k8s_api_root": "https://192.168.84.32:6443",
+             "k8s_api_root": "https://192.168.89.112:6443",
              "k8s_auth_token": ""
         },
         "kubernetes": {

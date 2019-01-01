@@ -1,4 +1,4 @@
-# kubernetes集群搭建
+# kubernetes集群搭建  （kubeadm）
 192.168.84.32  master01
 192.168.84.33  node01
 192.168.84.34  node02
@@ -20,21 +20,6 @@ gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors
 EOF
 #kubernetes安装官方文档
 https://kubernetes.io/docs/setup/independent/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl
-# 关闭selinux防火墙
-执行setenforce 0
-#selinux配置设置Set SELinux in permissive mode
-sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-SELINUX=disabled 
-#centos7设置k8s.conf
-cat <<EOF >  /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
-EOF
-sysctl --system
-执行命令使修改生效。
-modprobe br_netfilter
-sysctl -p /etc/sysctl.d/k8s.conf
-
 ## Master节点
  Master节点上面主要由四个模块组成，APIServer，schedule,controller-manager,etcd
 ## Node节点：
@@ -102,9 +87,9 @@ net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 EOF
-sysctl -p /etc/sysctl.d/k8s.conf
-##执行上边命令报错解决：
+
 modprobe br_netfilter
+sysctl -p /etc/sysctl.d/k8s.conf
 ls /proc/sys/net/bridge
 # 安装 Docker
 yum update
@@ -113,13 +98,13 @@ yum update
 ## Step 2: 添加软件源信息
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo 或 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 yum list docker-ce --showduplicates | sort -r  列出docker版本
-yum install docker-ce -y
+yum install docker-ce-18.06.1.ce-3.el7 -y
 systemctl start docker && systemctl enable docker
 ## Step 3: 更新并安装Docker-CE
  yum makecache fast
  yum install -y --setopt=obsoletes=0 docker-ce-18.06.1.ce-3.el7
 ## Step 4: 开启Docker服务
-service docker start
+systemctl start docker
 ## 配置阿里云加速器我的阿里云加速器
 使用vi修改 /etc/docker/daemon.json 文件并添加上”registry-mirrors”: [“https://registry.docker-cn.com“]，如下：
 vi /etc/docker/daemon.json
@@ -135,7 +120,7 @@ systemctl start docker
 配置Docker开机自启动
 systemctl enable docker
 ## 安装 kubeadm，kubelet，kubectl
-在各节点安装kubeadm，kubelet，kubectl
+在各节点安装 kubeadm，kubelet，kubectl
 安装完后，设置kubelet服务开机自启：必须设置Kubelet开机自启动，才能让k8s集群各组件在系统重启后自动运行。
 yum install -y kubelet kubeadm kubectl
 systemctl enable kubelet && systemctl start kubelet
@@ -150,9 +135,9 @@ root@k8s-master:~# kubeadm  init -h
    --ignore-preflight-errors strings： 忽略一些错误
 主节点上执行初始化
 kubeadm init \
-    --apiserver-advertise-address=192.168.84.32 \
-    --image-repository registry.aliyuncs.com/google_containers \
-    --kubernetes-version v1.13.1 \
+    --apiserver-advertise-address=192.168.89.111 \
+    --image-repository=registry.aliyuncs.com/google_containers \
+    --kubernetes-version=v1.13.1 \
     --pod-network-cidr=10.244.0.0/16
 
 --image-repository  Kubenetes默认Registries地址是k8s.gcr.io，在国内并不能访问gcr.io，在1.13版本中我们可以增加–image-repository参数，默认值是k8s.gcr.io，将其指定为阿里云镜像地址：registry.aliyuncs.com/google_containers。
@@ -166,8 +151,8 @@ kubeadm join
 ## 在主机上执行 kubectl get nodes 查看node信息出错
 解决 ： the server doesn't have a resource type "nodes"
   mkdir -p $HOME/.kube
-  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+  cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  chown $(id -u):$(id -g) $HOME/.kube/config
   需要开启api server 代理端口：
 查看端口是否代理：curl localhost:8080/api
 开启端口代理：kubectl proxy --port=8080 &
@@ -177,7 +162,9 @@ kubectl taint nodes k8s-master node-role.kubernetes.io/master-node/k8s-master un
 ## 各Node节点处于"NotReady" ，需要安装一个CNI网络插件：calico 或flannel
 ## master上部署flannel
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
+下载kube-flannel.yml里边对应的flannel的镜像并重命名为kube-flannel.yml里边的镜像名字（kube-flannel.yml里边的镜像下载不下来的解决办法）
+docker pull rancher/coreos-flannel:v0.10.0
+docker tag rancher/coreos-flannel:v0.10.0  quay.io/coreos/flannel:v0.10.0-amd64
 wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel-rbac.yml
 wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 kubectl apply -f kube-fannel-rbac.yml

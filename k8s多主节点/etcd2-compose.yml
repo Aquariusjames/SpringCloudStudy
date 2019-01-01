@@ -1,0 +1,12 @@
+etcd:
+  image: appcelerator/etcd:3.3
+  command: etcd --name etcd-srv2 --data-dir=/var/etcd/calico-data --listen-client-urls http://0.0.0.0:2379 --advertise-client-urls http://172.16.2.2:2379,http://172.16.2.2:2380 --initial-advertise-peer-urls http://172.16.2.2:2380 --listen-peer-urls http://0.0.0.0:2380 -initial-cluster-token etcd-cluster -initial-cluster "etcd-srv1=http://172.16.2.1:2380,etcd-srv2=http://172.16.2.2:2380,etcd-srv3=http://172.16.2.3:2380" -initial-cluster-state new
+  net: "bridge"
+  ports:
+    - "2379:2379"
+    - "2380:2380"
+  restart: always
+  stdin_open: true
+  tty: true
+  volumes:
+    - /store/etcd:/var/etcd

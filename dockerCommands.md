@@ -50,7 +50,7 @@ vi /etc/docker/daemon.json
 systemctl daemon-reload
 systemctl restart docker
 docker镜像仓库地址
-https://hub.docker.com/r/library
+https://hub.docker.com
 
 启动
 systemctl start docker
