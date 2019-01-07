@@ -265,7 +265,6 @@ for channel '500';
 start slave;
 
 stop slave;     //停止同步
-
 start slave;     //开始同步
 
 //必须和【主库】的信息匹配。
