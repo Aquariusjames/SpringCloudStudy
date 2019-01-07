@@ -23,7 +23,7 @@ sidecar:
 eureka:
   client:
       register-with-eureka: false #不将自己注册到eureka服务（高可用配置时不用设置）
-      fetch-registry: false
+      fetch-registry: false   #由于注册中心的职责就是维护服务实例，它并不需要去检索服务， 所以也设置为 false
       service-url:
         defaultZone: http://user:password@${eureka.instance.hostname}:${server.port}/eureka/
   instance:

@@ -1,4 +1,7 @@
 # cetos7网络设置
+MTU通信术语 最大传输单元（Maximum Transmission Unit，MTU）是指一种通信协议的某一层上面所能通过的最大数据包大小（以字节为单位）。最大传输单元这个参数通常与通信接口有关
+cat /sys/class/net/eth0/mtu （centos6） 查看MTU值 
+cat /sys/class/net/ens33/mtu  （centos7） 查看MTU值 
 重启网络失败解决 解决命令：
 systemctl stop NetworkManager
 systemctl disable NetworkManager

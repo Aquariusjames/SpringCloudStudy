@@ -24,6 +24,8 @@ logging:                                # 配置日志级别，让hibernate打�
               BasicExtractor: TRACE
 eureka:
   client:
+    healthcheck:
+      enabled: true  #使用health端点来代替心跳表明服务是否可用，反应到eureka server ui上服务的UP还是DOWN;把Eureka客户端的健康检测交 给spring-boot-actuator模块的/health端点， 以实现更加全面的健康状态维护
     serviceUrl:
       defaultZone: http://user:password123@peer1:8761/eureka/
   instance:
@@ -55,3 +57,14 @@ spring:
     platform: h2                        # 指定数据源类型
     schema: classpath:schema.sql        # 指定h2数据库的建表脚本
     data: classpath:data.sql            # 指定h2数据库的数据脚本
+#利用应用名加随机数的方式来区分不同的实例， 从而实现在同 一 主
+#机上， 不指定端口就能轻松启动多个实例的效果。
+#server.port=${random.int[10000,99999]}
+#eureka.instance.instanceId=${spring.application.name}:${random.int}
+#
+
+
+
+
+
+
