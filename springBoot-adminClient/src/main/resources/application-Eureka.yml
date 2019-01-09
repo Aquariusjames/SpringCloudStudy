@@ -1,0 +1,19 @@
+server:
+  port: 8088
+spring:
+  application:
+    name: springBoot-adminClient
+eureka:
+  instance:
+    health-check-url-path: /actuator/health
+  client:
+    service-url:
+      defaultZone: http://user:password123@peer1:8761/eureka/
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: *  #暴露actuator的所有端口

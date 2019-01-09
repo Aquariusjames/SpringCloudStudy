@@ -23,5 +23,7 @@
         <module>springCloud-DockerDemo</module>
         <module>springCloud-Sentinel</module>
         <module>springCloud-Gateway</module>
+        <module>springBoot-adminClient</module>
+        <module>springBoot-adminServer</module>
     </modules>
 </project>

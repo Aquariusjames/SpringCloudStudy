@@ -1,0 +1,17 @@
+server:
+  port: 8088
+spring:
+  application:
+    name: springBoot-adminClient
+  boot:
+    admin:
+      client:
+        url: http://localhost:8089
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: always

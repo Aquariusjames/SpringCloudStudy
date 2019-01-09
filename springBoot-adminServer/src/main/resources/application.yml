@@ -1,0 +1,9 @@
+server:
+  port: 8089
+spring:
+  application:
+    name: springBoot-admin
+  security:
+    user:
+      name: "admin"
+      password: "admin"

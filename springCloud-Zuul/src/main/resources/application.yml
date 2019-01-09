@@ -18,6 +18,14 @@ zuul:
       disable: true   #禁用该过滤器
   routes:
     springCloud-Provider: /user/**  #将springCloud-Provider服务映射到/user/**路径
+
+#    下面的配置与上面等效
+#      path: /user/**  #将springCloud-Provider服务映射到/user/**路径
+#      serviceId: springCloud-Provider
+#？      匹配任意单 个字符
+#＊      匹配任意数朵的字符
+#＊＊    匹配任意数址的字符， 支待多级目录
+
   ignored-services: springCloud-Ignored #忽略的服务
 #  sensitive-headers: Cookie,Set-Cookie,Authorization #全局指定敏感Header
 #  ignored-headers: Header1,Header2 #忽略header
