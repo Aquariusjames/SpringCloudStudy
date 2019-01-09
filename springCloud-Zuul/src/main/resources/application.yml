@@ -3,12 +3,6 @@ server:
 spring:
   application:
     name: springCloud-Zuul
-eureka:
-  client:
-    service-url:
-      defaultZone: http://user:password@peer1:8761/eureka/
-  instance:
-    prefer-ip-address: true
 zuul:
   SendResponseFilter:
     post:
